@@ -13,19 +13,18 @@ setopt NO_BEEP
 # Zinit Plugins
 zinit ice depth=1
 
-zinit light jeffreytse/zsh-vi-mode
+# zinit light jeffreytse/zsh-vi-mode
 zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-completions
+# zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
-zinit light Aloxaf/fzf-tab
+# zinit light Aloxaf/fzf-tab
 
 autoload -Uz promptinit
 promptinit
-prompt adam1
 
 
 # Use emacs keybindings even if our EDITOR is set to vi
-bindkey '^I' autosuggest-accept
+# bindkey '^I' autosuggest-accept
 
 # Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
 HISTSIZE=1000
@@ -53,12 +52,11 @@ zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
 # FZF Config
-zstyle ':completion:*' menu no
-zstyle ':fzf-tab:*' use-fzf-default-opts yes
-zstyle ':fzf-tab:complete:*' fzf-preview 'ls --color=always ${realpath}'
+# zstyle ':completion:*' menu no
+# zstyle ':fzf-tab:*' use-fzf-default-opts yes
+# zstyle ':fzf-tab:complete:*' fzf-preview 'ls --color=always ${realpath}'
 
 # Use modern completion system
 autoload -Uz compinit
 compinit
-
 
