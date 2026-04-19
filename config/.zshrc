@@ -13,3 +13,5 @@ source "${DCONF}/zsh/root-safe.zsh"
 if [[ -d ${HOME}/.opencode/bin ]]; then
   export PATH=${HOME}/.opencode/bin:$PATH
 fi
+
+export PATH="$HOME/.local/bin:$PATH"

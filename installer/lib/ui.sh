@@ -4,14 +4,217 @@ UI_TITLE='lnx-df'
 UI_MENU_TITLE='lnx-df'
 UI_SUBTITLE='Workspace installer'
 UI_HINT='Up/Down, Enter, Esc, Ctrl+C.'
+UI_GUM_ACCENT=252
+UI_GUM_MUTED=245
+UI_GUM_BORDER=240
+UI_GUM_SELECTED=255
+
+ui_gum_path() {
+  if command_exists gum; then
+    command -v gum
+    return 0
+  fi
+
+  local candidate
+  local candidates=(
+    "$(install_user_bin_dir)/gum"
+    "${INSTALL_USER_HOME}/go/bin/gum"
+    "/home/linuxbrew/.linuxbrew/bin/gum"
+    "/usr/local/bin/gum"
+    "/usr/bin/gum"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -x ${candidate} ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+ui_has_gum() {
+  ui_gum_path >/dev/null 2>&1
+}
+
+ui_run_gum() {
+  local gum_cmd
+  gum_cmd="$(ui_gum_path)" || return 1
+  "$gum_cmd" "$@"
+}
+
+ui_wants_gum_backend() {
+  case "${LNX_DF_UI_MODE:-auto}" in
+    auto|gum|'') return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+ui_gum_release_arch() {
+  local machine
+  machine="$(uname -m 2>/dev/null || true)"
+
+  case "$machine" in
+    x86_64|amd64) printf 'x86_64\n' ;;
+    aarch64|arm64) printf 'arm64\n' ;;
+    armv7l|armv7) printf 'armv7\n' ;;
+    i386|i686) printf 'i386\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+install_gum_binary_release() {
+  require_install_user_context 'gum installation' || return 1
+
+  if (( DRY_RUN )); then
+    log "dry-run: install gum binary to $(install_user_bin_dir)/gum"
+    return 0
+  fi
+
+  if ! command_exists curl; then
+    install_package_key curl-runtime || return 1
+  fi
+
+  if ! command_exists tar; then
+    warn "tar is required to install gum binary"
+    return 1
+  fi
+
+  local arch
+  arch="$(ui_gum_release_arch 2>/dev/null || true)"
+  if [[ -z ${arch} ]]; then
+    warn "unsupported architecture for gum binary install: $(uname -m 2>/dev/null || printf 'unknown')"
+    return 1
+  fi
+
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  local version_url="https://github.com/charmbracelet/gum/releases/latest"
+  local release_url
+  local version
+  local archive_name
+  local archive_path
+  local extract_dir
+  local extracted_gum=
+
+  release_url="$(curl --connect-timeout 15 --max-time 60 -fsSLI -o /dev/null -w '%{url_effective}' "$version_url" 2>/dev/null || true)"
+  version="${release_url##*/}"
+  if [[ -z ${version} || ${version} == latest ]]; then
+    warn "failed to resolve latest gum release"
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  archive_name="gum_${version#v}_Linux_${arch}.tar.gz"
+  archive_path="${tmp_dir}/${archive_name}"
+  extract_dir="${tmp_dir}/extract"
+
+  if ! curl_download "https://github.com/charmbracelet/gum/releases/download/${version}/${archive_name}" "$archive_path"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  run_cmd mkdir -p "$extract_dir"
+  run_cmd tar -xzf "$archive_path" -C "$extract_dir" || {
+    run_cmd rm -rf "$tmp_dir"
+    return 1
+  }
+
+  local candidate
+  for candidate in "${extract_dir}/gum" "${extract_dir}"/*/gum "${extract_dir}"/*/*/gum; do
+    if [[ -x ${candidate} ]]; then
+      extracted_gum=$candidate
+      break
+    fi
+  done
+
+  if [[ -z ${extracted_gum} ]]; then
+    warn "downloaded gum archive did not contain the gum binary"
+    run_cmd rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  if [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" mkdir -p "$(install_user_bin_dir)"
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" install -m 0755 "$extracted_gum" "$(install_user_bin_dir)/gum" || {
+      run_cmd rm -rf "$tmp_dir"
+      return 1
+    }
+  else
+    ensure_parent_dir "$(install_user_bin_dir)/gum"
+    run_cmd install -m 0755 "$extracted_gum" "$(install_user_bin_dir)/gum" || {
+      run_cmd rm -rf "$tmp_dir"
+      return 1
+    }
+  fi
+
+  run_cmd rm -rf "$tmp_dir"
+  prepend_path_once "$(install_user_bin_dir)"
+  ensure_user_tool_path_persisted "$(install_user_bin_dir)" || true
+
+  if ! ui_has_gum; then
+    warn "gum binary install completed but gum is still unavailable"
+    return 1
+  fi
+
+  return 0
+}
+
+install_gum_for_ui() {
+  if ui_has_gum; then
+    return 0
+  fi
+
+  log "bootstrapping gum for interactive UI"
+
+  if install_gum_binary_release; then
+    return 0
+  fi
+
+  if (( EUID == 0 )); then
+    if install_package_key_first_available gum-ui 2>/dev/null; then
+      return 0
+    fi
+  elif command_exists sudo && sudo -n true >/dev/null 2>&1; then
+    if install_package_key_first_available gum-ui 2>/dev/null; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+ui_prepare_backend() {
+  if ! ui_wants_gum_backend; then
+    return 0
+  fi
+
+  if ui_has_gum; then
+    return 0
+  fi
+
+  if ! ui_has_tty; then
+    return 0
+  fi
+
+  if ! install_gum_for_ui; then
+    warn "gum bootstrap failed; falling back to plain UI"
+    return 0
+  fi
+}
 
 ui_backend() {
   case "${LNX_DF_UI_MODE:-auto}" in
     gum|whiptail|dialog|plain)
-      printf '%s\n' "${LNX_DF_UI_MODE}"
+      if [[ ${LNX_DF_UI_MODE} == gum ]] && ! ui_has_gum; then
+        printf 'plain\n'
+      else
+        printf '%s\n' "${LNX_DF_UI_MODE}"
+      fi
       ;;
     auto|'')
-      if command_exists gum; then
+      if ui_has_gum; then
         printf 'gum\n'
       else
         printf 'plain\n'
@@ -47,9 +250,6 @@ ui_plain_banner() {
 
   printf '\nlnx-df\n' >&2
   printf '%s\n' "$UI_SUBTITLE" >&2
-  if ! command_exists gum; then
-    printf '%s\n' 'Tip: install gum for the polished panel UI.' >&2
-  fi
   printf '\n%s\n' "$prompt" >&2
 }
 
@@ -466,14 +666,36 @@ ui_plain_select_many_interactive() {
 
 ui_gum_header() {
   local prompt=$1
-  local header
+  printf '%s\n%s\n\n%s\n%s' \
+    "$(ui_run_gum style --bold --foreground "$UI_GUM_SELECTED" 'lnx-df')" \
+    "$(ui_run_gum style --foreground "$UI_GUM_MUTED" "$UI_SUBTITLE")" \
+    "$(ui_run_gum style --bold --foreground "$UI_GUM_ACCENT" "$prompt")" \
+    "$(ui_run_gum style --foreground "$UI_GUM_MUTED" "$UI_HINT")"
+}
 
-  header="$(printf '%s\n%s\n\n%s\n%s' \
-    "$(gum style --bold --foreground 81 'lnx-df')" \
-    "$(gum style --foreground 248 "$UI_SUBTITLE")" \
-    "$(gum style --bold --foreground 252 "$prompt")" \
-    "$(gum style --foreground 244 "$UI_HINT")")"
-  gum style --border rounded --padding '1 2' --margin '1 0' --border-foreground 237 --background 236 --foreground 252 --align center --width 72 "$header"
+ui_gum_option_text() {
+  local id=$1
+  local label=$2
+  local description=$3
+
+  if [[ -n $description ]]; then
+    printf '%-14s %-18s %s' "$id" "$label" "$description"
+  else
+    printf '%-14s %s' "$id" "$label"
+  fi
+}
+
+ui_gum_choose() {
+  local prompt=$1
+  shift
+  local choose_args=(
+    --header "$(ui_gum_header "$prompt")"
+    --cursor '› '
+    --cursor.foreground "$UI_GUM_SELECTED"
+    --header.foreground "$UI_GUM_ACCENT"
+  )
+
+  ui_run_gum choose "${choose_args[@]}" "$@"
 }
 
 ui_show_plain_options() {
@@ -508,11 +730,11 @@ ui_select_many() {
     local entry
     for entry in "${entries[@]}"; do
       IFS='|' read -r id label description _ <<<"$entry"
-      options+=("$(ui_option_text "$label" "$description")")
+      options+=("$(ui_gum_option_text "$id" "$label" "$description")")
     done
 
     local result
-    result="$(printf '%s\n' "${options[@]}" | gum choose --no-limit --cursor.foreground 81 --header.foreground 248 --header "$(ui_gum_header "$prompt")")" || return 1
+    result="$(ui_gum_choose "$prompt" --no-limit "${options[@]}")" || return 1
     while IFS= read -r line; do
       [[ -n $line ]] || continue
       local entry_index
@@ -592,11 +814,11 @@ ui_select_one() {
     local entry
     for entry in "${entries[@]}"; do
       IFS='|' read -r id label description _ <<<"$entry"
-      options+=("$(ui_option_text "$label" "$description")")
+      options+=("$(ui_gum_option_text "$id" "$label" "$description")")
     done
 
     local result
-    result="$(printf '%s\n' "${options[@]}" | gum choose --cursor.foreground 81 --header.foreground 248 --header "$(ui_gum_header "$prompt")")" || return 1
+    result="$(ui_gum_choose "$prompt" "${options[@]}")" || return 1
     if [[ -n $result ]]; then
       local entry_index
       for entry_index in "${!options[@]}"; do
@@ -642,12 +864,15 @@ ui_select_one() {
 
 ui_confirm() {
   local prompt=$1
+  local negative_label=${2:-no}
 
   local backend
   backend="$(ui_backend)"
 
   if [[ $backend == gum ]]; then
-    gum confirm "$(ui_gum_header "$prompt")"
+    local result
+    result="$(ui_gum_choose "$prompt" "$negative_label" 'yes')" || return 1
+    [[ $result == yes ]]
     return $?
   fi
 
@@ -705,7 +930,10 @@ ui_show_text() {
   backend="$(ui_backend)"
 
   if [[ $backend == gum ]]; then
-    gum style --border rounded --padding '1 2' --margin '1 0' --border-foreground 237 --background 236 --foreground 252 --align center --width 72 "$(printf '%s\n\n%s' "$(gum style --bold --foreground 81 "$title")" "$body")"
+    printf '\n%s\n' "$(ui_run_gum style --bold --foreground "$UI_GUM_SELECTED" 'lnx-df')"
+    printf '%s\n' "$(ui_run_gum style --foreground "$UI_GUM_MUTED" "$UI_SUBTITLE")"
+    printf '\n%s\n' "$(ui_run_gum style --bold --foreground "$UI_GUM_ACCENT" "$title")"
+    printf '%s\n\n' "$body"
     printf '\n'
     return 0
   fi

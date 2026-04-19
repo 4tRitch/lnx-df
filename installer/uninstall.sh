@@ -37,6 +37,11 @@ component_label_list() {
   join_by ', ' "${labels[@]}"
 }
 
+uninstall_entries() {
+  printf '%s|%s|%s\n' all 'All components' 'Attempt uninstall for every supported component'
+  uninstall_component_entries
+}
+
 uninstall_prompt() {
   cat <<'EOF'
 Uninstall workspace pieces
@@ -102,8 +107,17 @@ elif (( ${#SELECTED_COMPONENTS[@]} == 0 )); then
     exit 1
   fi
 
-  mapfile -t AVAILABLE_ENTRIES < <(component_entries)
+  mapfile -t AVAILABLE_ENTRIES < <(uninstall_entries)
   mapfile -t SELECTED_COMPONENTS < <(ui_select_many "$(uninstall_prompt)" "${AVAILABLE_ENTRIES[@]}")
+fi
+
+if printf '%s\n' "${SELECTED_COMPONENTS[@]}" | grep -qx all; then
+  ALL_COMPONENTS=1
+  SELECTED_COMPONENTS=("${COMPONENT_IDS[@]}")
+fi
+
+if (( ! ALL_COMPONENTS )); then
+  mapfile -t SELECTED_COMPONENTS < <(normalize_component_list "${SELECTED_COMPONENTS[@]}")
 fi
 
 if (( ${#SELECTED_COMPONENTS[@]} == 0 )); then
@@ -111,7 +125,7 @@ if (( ${#SELECTED_COMPONENTS[@]} == 0 )); then
   exit 0
 fi
 
-if (( ! NON_INTERACTIVE )) && ! ui_confirm "Proceed with uninstall for: $(component_label_list "${SELECTED_COMPONENTS[@]}")"; then
+if (( ! NON_INTERACTIVE )) && ! ui_confirm "Proceed with uninstall for: $(component_label_list "${SELECTED_COMPONENTS[@]}")" cancel; then
   log "uninstall cancelled"
   exit 0
 fi

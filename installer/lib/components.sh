@@ -95,6 +95,28 @@ component_description() {
   esac
 }
 
+component_uninstall_mode() {
+  case "$1" in
+    dotfiles|rust|tauri|opencode|gentle-ai|codex|claude-code|qwen-cli)
+      printf 'full'
+      ;;
+    *)
+      printf 'conservative'
+      ;;
+  esac
+}
+
+component_uninstall_description() {
+  local base_description
+  base_description="$(component_description "$1")"
+
+  case "$(component_uninstall_mode "$1")" in
+    full) printf '%s • removes managed files' "$base_description" ;;
+    conservative) printf '%s • keep system packages' "$base_description" ;;
+    *) printf '%s' "$base_description" ;;
+  esac
+}
+
 preset_label() {
   case "$1" in
     basic) printf 'Basic' ;;
@@ -121,6 +143,13 @@ component_entries() {
   local id
   for id in "${COMPONENT_IDS[@]}"; do
     printf '%s|%s|%s\n' "$id" "$(component_label "$id")" "$(component_description "$id")"
+  done
+}
+
+uninstall_component_entries() {
+  local id
+  for id in "${COMPONENT_IDS[@]}"; do
+    printf '%s|%s|%s\n' "$id" "$(component_label "$id")" "$(component_uninstall_description "$id")"
   done
 }
 
@@ -281,6 +310,13 @@ packages_for_key() {
         dnf) printf 'golang\n' ;;
       esac
       ;;
+    gum-ui)
+      case "${PACKAGE_MANAGER}" in
+        apt) printf 'gum\n' ;;
+        pacman) printf 'gum\n' ;;
+        dnf) printf 'gum\n' ;;
+      esac
+      ;;
     unzip-runtime)
       case "${PACKAGE_MANAGER}" in
         apt) printf 'unzip\n' ;;
@@ -365,6 +401,25 @@ check_command_component() {
     log "check passed: ${label}"
     note_command_path_status "$command_name" "$label"
     return 0
+  fi
+
+  warn "check failed: ${label} command not found"
+  return 1
+}
+
+check_native_command_component() {
+  local command_name=$1
+  local label=${2:-$1}
+
+  if native_command_exists "$command_name"; then
+    log "check passed: ${label}"
+    note_command_path_status "$command_name" "$label"
+    return 0
+  fi
+
+  if is_wsl_environment && command_exists "$command_name"; then
+    warn "check failed: ${label} resolves outside WSL; install a native WSL copy"
+    return 1
   fi
 
   warn "check failed: ${label} command not found"
@@ -473,11 +528,11 @@ check_component() {
     dotnet) check_dotnet ;;
     tauri) check_tauri ;;
     godot) check_godot ;;
-    opencode) check_command_component opencode OpenCode ;;
+    opencode) check_native_command_component opencode OpenCode ;;
     gentle-ai) check_command_component gentle-ai 'Gentle AI' ;;
-    codex) check_command_component codex Codex ;;
-    claude-code) check_command_component claude 'Claude Code' ;;
-    qwen-cli) check_command_component qwen 'Qwen Code' ;;
+    codex) check_native_command_component codex Codex ;;
+    claude-code) check_native_command_component claude 'Claude Code' ;;
+    qwen-cli) check_native_command_component qwen 'Qwen Code' ;;
     *) warn "unknown component: $1" ; return 1 ;;
   esac
 }
@@ -490,12 +545,15 @@ run_component_checks() {
   CHECK_FAILED_COMPONENTS=()
 
   for component in "$@"; do
+    set_install_state_phase check "$component"
     log "checking $(component_label "$component")"
     if ! check_component "$component"; then
       failures=$((failures + 1))
       CHECK_FAILED_COMPONENTS+=("$component")
+      mark_install_state_failed check "$component"
     else
       CHECK_PASSED_COMPONENTS+=("$component")
+      mark_install_state_check_completed "$component"
     fi
   done
 
@@ -510,11 +568,12 @@ run_component_checks() {
 uninstall_component() {
   case "$1" in
     dotfiles) uninstall_dotfiles ;;
-    opencode) npm_global_uninstall opencode-ai ;;
+    rust) uninstall_rust ;;
+    opencode) npm_global_uninstall opencode-ai && remove_native_command_link opencode ;;
     gentle-ai) uninstall_gentle_ai ;;
-    codex) npm_global_uninstall @openai/codex ;;
-    claude-code) npm_global_uninstall @anthropic-ai/claude-code ;;
-    qwen-cli) npm_global_uninstall @qwen-code/qwen-code ;;
+    codex) npm_global_uninstall @openai/codex && remove_native_command_link codex ;;
+    claude-code) npm_global_uninstall @anthropic-ai/claude-code && remove_native_command_link claude ;;
+    qwen-cli) npm_global_uninstall @qwen-code/qwen-code && remove_native_command_link qwen ;;
     tauri) uninstall_tauri ;;
     *) log "skip uninstall for $1: system-managed or intentionally non-destructive" ;;
   esac
@@ -534,14 +593,14 @@ install_dotfiles() {
 }
 
 uninstall_dotfiles() {
-  remove_repo_symlink "${HOME}/.zshrc"
-  remove_repo_symlink "${HOME}/.config/zsh"
-  remove_repo_symlink "${HOME}/.config/nvim"
-  remove_repo_symlink "${HOME}/.config/kitty/kitty.conf"
-  remove_repo_symlink "${HOME}/.tmux.conf"
-  remove_repo_symlink "${HOME}/.config/tmux/tmux.conf"
-  remove_repo_symlink "${HOME}/.config/kitty"
-  remove_repo_symlink "${HOME}/.config/tmux"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.zshrc"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/zsh"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/nvim"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty/kitty.conf"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.tmux.conf"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/tmux/tmux.conf"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/tmux"
 }
 
 install_zsh() {
@@ -688,12 +747,22 @@ install_python() {
 }
 
 install_nodejs() {
-  if command_exists node && command_exists npm; then
+  if is_wsl_environment; then
+    if native_command_exists node && native_command_exists npm; then
+      log "node and npm already installed in WSL"
+      return 0
+    fi
+  elif command_exists node && command_exists npm; then
     log "node and npm already installed"
     return 0
   fi
 
   install_package_key nodejs
+
+  if is_wsl_environment && (! native_command_exists node || ! native_command_exists npm); then
+    warn "nodejs install completed but native WSL node/npm are still unavailable"
+    return 1
+  fi
 }
 
 install_pnpm() {
@@ -716,7 +785,10 @@ install_pnpm() {
 }
 
 install_rust() {
-  if command_exists rustup || command_exists cargo || [[ -x ${HOME}/.cargo/bin/cargo ]]; then
+  require_install_user_context 'Rust installation' || return 1
+
+  if command_exists rustup || command_exists cargo || [[ -x ${INSTALL_USER_HOME}/.cargo/bin/cargo ]]; then
+    activate_rust_environment
     log "rust toolchain already installed"
     return 0
   fi
@@ -725,12 +797,62 @@ install_rust() {
     install_package_key curl-runtime || return 1
   fi
 
+  local tmp_script
+  tmp_script="$(mktemp)"
+
+  curl_download https://sh.rustup.rs "$tmp_script" || {
+    rm -f "$tmp_script"
+    return 1
+  }
+
   if (( DRY_RUN )); then
-    log "dry-run: curl https://sh.rustup.rs | sh -s -- -y"
+    if (( NON_INTERACTIVE )); then
+      log "dry-run: sh ${tmp_script} -y"
+    else
+      log "dry-run: sh ${tmp_script}"
+    fi
+    rm -f "$tmp_script"
     return 0
   fi
 
-  curl https://sh.rustup.rs -sSf | sh -s -- -y
+  if (( NON_INTERACTIVE )); then
+    run_as_install_user env HOME="${INSTALL_USER_HOME}" sh "$tmp_script" -y || {
+      rm -f "$tmp_script"
+      return 1
+    }
+  else
+    log "launching interactive rustup installer"
+    run_as_install_user env HOME="${INSTALL_USER_HOME}" sh "$tmp_script" || {
+      rm -f "$tmp_script"
+      return 1
+    }
+  fi
+
+  rm -f "$tmp_script"
+  activate_rust_environment
+  ensure_user_tool_path_persisted "${INSTALL_USER_HOME}/.cargo/bin" || true
+
+  if ! command_exists rustup; then
+    warn "rust install completed but rustup is still unavailable in this shell"
+    return 1
+  fi
+
+  local cargo_cmd
+  if ! cargo_cmd="$(cargo_bin 2>/dev/null)"; then
+    warn "rust install completed but cargo is still unavailable in this shell"
+    return 1
+  fi
+
+  local rustc_cmd
+  rustc_cmd="$(command -v rustc 2>/dev/null || true)"
+  if [[ -z ${rustc_cmd} && -x ${INSTALL_USER_HOME}/.cargo/bin/rustc ]]; then
+    rustc_cmd="${INSTALL_USER_HOME}/.cargo/bin/rustc"
+  fi
+
+  if [[ -z ${rustc_cmd} ]]; then
+    warn "rust install completed but rustc is still unavailable in this shell"
+    return 1
+  fi
 }
 
 install_go() {
@@ -744,6 +866,7 @@ install_go() {
 
 install_dotnet() {
   if command_exists dotnet || [[ -x ${HOME}/.dotnet/dotnet ]]; then
+    activate_dotnet_environment
     log ".NET already installed"
     return 0
   fi
@@ -757,16 +880,31 @@ install_dotnet() {
 
   run_cmd bash "$tmp_script" --channel 8.0 --install-dir "${HOME}/.dotnet"
   run_cmd rm -f "$tmp_script"
+
+  activate_dotnet_environment
+
+  if ! command_exists dotnet && [[ ! -x ${HOME}/.dotnet/dotnet ]]; then
+    warn ".NET install completed but dotnet is still unavailable in this shell"
+    return 1
+  fi
 }
 
 install_tauri() {
   install_rust || return 1
   install_nodejs || return 1
+  activate_rust_environment
 
   install_package_key tauri-deps || true
 
-  if command_exists tauri; then
+  local tauri_cmd
+  tauri_cmd="$(command -v tauri 2>/dev/null || true)"
+  if [[ -z ${tauri_cmd} && -x ${INSTALL_USER_HOME}/.cargo/bin/tauri ]]; then
+    tauri_cmd="${INSTALL_USER_HOME}/.cargo/bin/tauri"
+  fi
+
+  if [[ -n ${tauri_cmd} ]]; then
     log "tauri already installed"
+    note_command_path_status tauri Tauri
     return 0
   fi
 
@@ -777,6 +915,20 @@ install_tauri() {
   fi
 
   run_cmd "$cargo_cmd" install tauri-cli --locked
+
+  if [[ ! -x ${INSTALL_USER_HOME}/.cargo/bin/tauri ]]; then
+    warn "tauri-cli metadata exists but tauri binary is missing; retrying with --force"
+    run_cmd "$cargo_cmd" install tauri-cli --locked --force
+  fi
+
+  if [[ -x ${INSTALL_USER_HOME}/.cargo/bin/tauri ]]; then
+    ensure_user_tool_path_persisted "${INSTALL_USER_HOME}/.cargo/bin" || true
+    note_command_path_status tauri Tauri
+    return 0
+  fi
+
+  warn "tauri-cli install completed but tauri is still unavailable in this shell"
+  return 1
 }
 
 install_godot() {
@@ -804,16 +956,26 @@ install_gentle_ai() {
   fi
 
   install_go || return 1
+  require_install_user_context 'gentle-ai installation' || return 1
 
-  local gobin="${HOME}/.local/bin"
-  ensure_parent_dir "${gobin}/gentle-ai"
+  local gobin
+  gobin="$(install_user_bin_dir)"
+
+  if (( DRY_RUN )); then
+    :
+  elif [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" mkdir -p "$gobin"
+  else
+    ensure_parent_dir "${gobin}/gentle-ai"
+  fi
 
   if (( DRY_RUN )); then
     log "dry-run: GOBIN=${gobin} go install github.com/gentleman-programming/gentle-ai/cmd/gentle-ai@latest"
     return 0
   fi
 
-  PATH="${gobin}:${PATH}" GOBIN="${gobin}" go install github.com/gentleman-programming/gentle-ai/cmd/gentle-ai@latest
+  run_as_install_user env PATH="${gobin}:${PATH}" GOBIN="${gobin}" go install github.com/gentleman-programming/gentle-ai/cmd/gentle-ai@latest
+  ensure_user_tool_path_persisted "$gobin" || true
 }
 
 install_codex() {
@@ -961,6 +1123,21 @@ check_python() {
 
 check_nodejs() {
   local failures=0
+
+  if is_wsl_environment; then
+    local node_cmd
+    if node_cmd="$(native_node_command 2>/dev/null)"; then
+      check_command_min_version "$node_cmd" Node.js 18.0.0 --version || failures=$((failures + 1))
+    else
+      warn "check failed: Node.js not found inside WSL"
+      failures=$((failures + 1))
+    fi
+
+    check_native_command_component npm npm || failures=$((failures + 1))
+    (( failures == 0 ))
+    return 0
+  fi
+
   check_command_min_version node Node.js 18.0.0 --version || failures=$((failures + 1))
   check_command_component npm npm || failures=$((failures + 1))
   (( failures == 0 ))
@@ -969,7 +1146,9 @@ check_nodejs() {
 check_rust() {
   local failures=0
 
-  if command_exists rustup || [[ -x ${HOME}/.cargo/bin/rustup ]]; then
+  activate_rust_environment
+
+  if command_exists rustup || [[ -x ${INSTALL_USER_HOME}/.cargo/bin/rustup ]]; then
     log "check passed: rustup"
     note_command_path_status rustup rustup
   else
@@ -982,6 +1161,19 @@ check_rust() {
     check_command_min_version "$cargo_cmd" cargo 1.75.0 --version || failures=$((failures + 1))
   else
     warn "check failed: cargo not found"
+    failures=$((failures + 1))
+  fi
+
+  local rustc_cmd
+  rustc_cmd="$(command -v rustc 2>/dev/null || true)"
+  if [[ -z ${rustc_cmd} && -x ${INSTALL_USER_HOME}/.cargo/bin/rustc ]]; then
+    rustc_cmd="${INSTALL_USER_HOME}/.cargo/bin/rustc"
+  fi
+
+  if [[ -n ${rustc_cmd} ]]; then
+    check_command_min_version "$rustc_cmd" Rust 1.75.0 --version || failures=$((failures + 1))
+  else
+    warn "check failed: rustc not found"
     failures=$((failures + 1))
   fi
 
@@ -1003,6 +1195,8 @@ check_nerd_fonts() {
 }
 
 check_dotnet() {
+  activate_dotnet_environment
+
   if command_exists dotnet || [[ -x ${HOME}/.dotnet/dotnet ]]; then
     log "check passed: .NET SDK"
     note_command_path_status dotnet '.NET SDK'
@@ -1017,7 +1211,23 @@ check_tauri() {
   local failures=0
   check_rust || failures=$((failures + 1))
   check_nodejs || failures=$((failures + 1))
-  check_command_component tauri Tauri || failures=$((failures + 1))
+
+  activate_rust_environment
+
+  local tauri_cmd
+  tauri_cmd="$(command -v tauri 2>/dev/null || true)"
+  if [[ -z ${tauri_cmd} && -x ${INSTALL_USER_HOME}/.cargo/bin/tauri ]]; then
+    tauri_cmd="${INSTALL_USER_HOME}/.cargo/bin/tauri"
+  fi
+
+  if [[ -n ${tauri_cmd} ]]; then
+    log "check passed: Tauri"
+    note_command_path_status tauri Tauri
+  else
+    warn "check failed: Tauri command not found"
+    failures=$((failures + 1))
+  fi
+
   (( failures == 0 ))
 }
 
@@ -1032,14 +1242,61 @@ check_godot() {
 }
 
 uninstall_gentle_ai() {
-  local binary_path="${HOME}/.local/bin/gentle-ai"
+  local binary_path="$(install_user_bin_dir)/gentle-ai"
 
   if [[ ! -e ${binary_path} ]]; then
     log "skip gentle-ai uninstall: ${binary_path} not present"
     return 0
   fi
 
-  run_cmd rm -f "${binary_path}"
+  remove_install_user_file "${binary_path}"
+}
+
+uninstall_rust() {
+  require_install_user_context 'Rust uninstall' || return 1
+
+  local rustup_cmd=
+  local cargo_home="${INSTALL_USER_HOME}/.cargo"
+  local rustup_home="${INSTALL_USER_HOME}/.rustup"
+
+  if [[ -x ${cargo_home}/bin/rustup ]]; then
+    rustup_cmd="${cargo_home}/bin/rustup"
+  elif native_command_exists rustup; then
+    rustup_cmd="$(native_command_path rustup 2>/dev/null || true)"
+  fi
+
+  if [[ -n ${rustup_cmd} ]]; then
+    if (( DRY_RUN )); then
+      log "dry-run: ${rustup_cmd} self uninstall -y"
+    else
+      run_as_install_user env HOME="${INSTALL_USER_HOME}" PATH="${cargo_home}/bin:${PATH}" "$rustup_cmd" self uninstall -y || return 1
+    fi
+  elif [[ ! -d ${cargo_home} && ! -d ${rustup_home} ]]; then
+    log "skip rust uninstall: no user-scoped rustup installation found"
+    return 0
+  fi
+
+  remove_install_user_file "${cargo_home}/env"
+
+  if [[ -d ${cargo_home} || -L ${cargo_home} ]]; then
+    if (( DRY_RUN )); then
+      log "dry-run: rm -rf ${cargo_home}"
+    elif [[ -n ${SUDO_USER:-} ]]; then
+      HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" rm -rf "$cargo_home"
+    else
+      rm -rf "$cargo_home"
+    fi
+  fi
+
+  if [[ -d ${rustup_home} || -L ${rustup_home} ]]; then
+    if (( DRY_RUN )); then
+      log "dry-run: rm -rf ${rustup_home}"
+    elif [[ -n ${SUDO_USER:-} ]]; then
+      HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" rm -rf "$rustup_home"
+    else
+      rm -rf "$rustup_home"
+    fi
+  fi
 }
 
 uninstall_tauri() {

@@ -4,26 +4,226 @@ COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALLER_ROOT="$(cd "${COMMON_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${INSTALLER_ROOT}/.." && pwd)"
 CONFIG_ROOT="${REPO_ROOT}/config"
+STATE_ROOT="${INSTALLER_ROOT}/.state"
+INSTALL_STATE_FILE="${STATE_ROOT}/install.state"
 
 DRY_RUN=${DRY_RUN:-0}
 APT_UPDATED=0
 PACMAN_UPDATED=0
 DNF_UPDATED=0
 ORIGINAL_PATH=${PATH:-}
+INSTALL_USER_NAME=${SUDO_USER:-${USER:-}}
+INSTALL_USER_HOME=${HOME}
+
+if [[ -n ${SUDO_USER:-} ]]; then
+  INSTALL_USER_HOME="$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)"
+  if [[ -z ${INSTALL_USER_HOME} && -r /etc/passwd ]]; then
+    INSTALL_USER_HOME="$(awk -F: -v user="$SUDO_USER" '$1 == user { print $6; exit }' /etc/passwd)"
+  fi
+  [[ -n ${INSTALL_USER_HOME} ]] || INSTALL_USER_HOME=${HOME}
+fi
+
 USER_TOOL_PATHS=(
-  "${HOME}/.local/bin"
-  "${HOME}/.cargo/bin"
-  "${HOME}/.dotnet"
-  "${HOME}/.dotnet/tools"
+  "${INSTALL_USER_HOME}/.local/bin"
+  "${INSTALL_USER_HOME}/.cargo/bin"
+  "${INSTALL_USER_HOME}/.dotnet"
+  "${INSTALL_USER_HOME}/.dotnet/tools"
 )
 PATH_RELOAD_REQUIRED_DIRS=()
 PATH_PERSISTENCE_MISSING_DIRS=()
 PATH_NOTICE_KEYS=' '
+STATE_VERSION=1
+STATE_ACTIVE=0
+STATE_CHECKS_ONLY=0
+STATE_ALL_COMPONENTS=0
+STATE_SELECTED_PRESET=
+STATE_SELECTED_COMPONENTS=()
+STATE_COMPLETED_INSTALL_COMPONENTS=()
+STATE_COMPLETED_CHECK_COMPONENTS=()
+STATE_CURRENT_COMPONENT=
+STATE_CURRENT_PHASE=idle
+STATE_LAST_STATUS=idle
 
 DISTRO_ID=
 DISTRO_NAME=
 DISTRO_FAMILY=
 PACKAGE_MANAGER=
+
+state_array_contains() {
+  local needle=$1
+  shift || true
+  local item
+
+  for item in "$@"; do
+    [[ $item == "$needle" ]] && return 0
+  done
+
+  return 1
+}
+
+install_user_bin_dir() {
+  printf '%s\n' "${INSTALL_USER_HOME}/.local/bin"
+}
+
+require_install_user_context() {
+  local label=${1:-this action}
+
+  if (( EUID == 0 )) && [[ -z ${SUDO_USER:-} ]]; then
+    warn "${label} is user-scoped and should not run as root without SUDO_USER context"
+    return 1
+  fi
+
+  return 0
+}
+
+run_as_install_user() {
+  if (( DRY_RUN )); then
+    printf '[lnx-df] dry-run:'
+    printf ' %q' "$@"
+    printf '\n'
+    return 0
+  fi
+
+  if [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" "$@"
+    return $?
+  fi
+
+  "$@"
+}
+
+state_reset_tracking() {
+  STATE_ACTIVE=0
+  STATE_CHECKS_ONLY=0
+  STATE_ALL_COMPONENTS=0
+  STATE_SELECTED_PRESET=
+  STATE_SELECTED_COMPONENTS=()
+  STATE_COMPLETED_INSTALL_COMPONENTS=()
+  STATE_COMPLETED_CHECK_COMPONENTS=()
+  STATE_CURRENT_COMPONENT=
+  STATE_CURRENT_PHASE=idle
+  STATE_LAST_STATUS=idle
+}
+
+save_install_state() {
+  mkdir -p "$STATE_ROOT"
+
+  {
+    printf 'STATE_VERSION=%q\n' "$STATE_VERSION"
+    printf 'STATE_ACTIVE=%q\n' "$STATE_ACTIVE"
+    printf 'STATE_CHECKS_ONLY=%q\n' "$STATE_CHECKS_ONLY"
+    printf 'STATE_ALL_COMPONENTS=%q\n' "$STATE_ALL_COMPONENTS"
+    printf 'STATE_SELECTED_PRESET=%q\n' "$STATE_SELECTED_PRESET"
+    printf 'STATE_CURRENT_COMPONENT=%q\n' "$STATE_CURRENT_COMPONENT"
+    printf 'STATE_CURRENT_PHASE=%q\n' "$STATE_CURRENT_PHASE"
+    printf 'STATE_LAST_STATUS=%q\n' "$STATE_LAST_STATUS"
+    printf 'STATE_SELECTED_COMPONENTS=('
+    printf ' %q' "${STATE_SELECTED_COMPONENTS[@]}"
+    printf ' )\n'
+    printf 'STATE_COMPLETED_INSTALL_COMPONENTS=('
+    printf ' %q' "${STATE_COMPLETED_INSTALL_COMPONENTS[@]}"
+    printf ' )\n'
+    printf 'STATE_COMPLETED_CHECK_COMPONENTS=('
+    printf ' %q' "${STATE_COMPLETED_CHECK_COMPONENTS[@]}"
+    printf ' )\n'
+  } >"$INSTALL_STATE_FILE"
+}
+
+load_install_state() {
+  [[ -f $INSTALL_STATE_FILE ]] || return 1
+
+  state_reset_tracking
+
+  # shellcheck disable=SC1090
+  source "$INSTALL_STATE_FILE"
+
+  [[ ${STATE_VERSION:-0} == 1 ]]
+}
+
+clear_install_state() {
+  rm -f "$INSTALL_STATE_FILE"
+  state_reset_tracking
+}
+
+start_install_state_run() {
+  local checks_only=$1
+  local all_components=$2
+  local preset=$3
+  shift 3
+
+  STATE_ACTIVE=1
+  STATE_CHECKS_ONLY=$checks_only
+  STATE_ALL_COMPONENTS=$all_components
+  STATE_SELECTED_PRESET=$preset
+  STATE_SELECTED_COMPONENTS=("$@")
+  STATE_COMPLETED_INSTALL_COMPONENTS=()
+  STATE_COMPLETED_CHECK_COMPONENTS=()
+  STATE_CURRENT_COMPONENT=
+  STATE_CURRENT_PHASE=planning
+  STATE_LAST_STATUS=running
+  save_install_state
+}
+
+resume_install_state_run() {
+  STATE_ACTIVE=1
+  STATE_CURRENT_PHASE=resuming
+  STATE_LAST_STATUS=running
+  save_install_state
+}
+
+set_install_state_phase() {
+  local phase=$1
+  local component=${2:-}
+
+  STATE_CURRENT_PHASE=$phase
+  STATE_CURRENT_COMPONENT=$component
+  STATE_LAST_STATUS=running
+  save_install_state
+}
+
+mark_install_state_install_completed() {
+  local component=$1
+
+  if ! state_array_contains "$component" "${STATE_COMPLETED_INSTALL_COMPONENTS[@]}"; then
+    STATE_COMPLETED_INSTALL_COMPONENTS+=("$component")
+  fi
+
+  STATE_CURRENT_COMPONENT=$component
+  STATE_CURRENT_PHASE=install-complete
+  STATE_LAST_STATUS=running
+  save_install_state
+}
+
+mark_install_state_check_completed() {
+  local component=$1
+
+  if ! state_array_contains "$component" "${STATE_COMPLETED_CHECK_COMPONENTS[@]}"; then
+    STATE_COMPLETED_CHECK_COMPONENTS+=("$component")
+  fi
+
+  STATE_CURRENT_COMPONENT=$component
+  STATE_CURRENT_PHASE=check-complete
+  STATE_LAST_STATUS=running
+  save_install_state
+}
+
+mark_install_state_failed() {
+  local phase=$1
+  local component=${2:-$STATE_CURRENT_COMPONENT}
+
+  STATE_CURRENT_PHASE=$phase
+  STATE_CURRENT_COMPONENT=$component
+  STATE_LAST_STATUS=failed
+  save_install_state
+}
+
+install_state_has_completed_install() {
+  state_array_contains "$1" "${STATE_COMPLETED_INSTALL_COMPONENTS[@]}"
+}
+
+install_state_has_completed_check() {
+  state_array_contains "$1" "${STATE_COMPLETED_CHECK_COMPONENTS[@]}"
+}
 
 path_contains_entry() {
   local path_entry=$1
@@ -45,11 +245,11 @@ known_user_tool_path() {
 
 shell_config_candidates() {
   printf '%s\n' \
-    "${HOME}/.profile" \
-    "${HOME}/.bash_profile" \
-    "${HOME}/.bashrc" \
-    "${HOME}/.zprofile" \
-    "${HOME}/.zshrc"
+    "${INSTALL_USER_HOME}/.profile" \
+    "${INSTALL_USER_HOME}/.bash_profile" \
+    "${INSTALL_USER_HOME}/.bashrc" \
+    "${INSTALL_USER_HOME}/.zprofile" \
+    "${INSTALL_USER_HOME}/.zshrc"
 }
 
 path_reference_variants() {
@@ -57,11 +257,74 @@ path_reference_variants() {
 
   printf '%s\n' "$path_entry"
 
-  if [[ $path_entry == "${HOME}"* ]]; then
-    printf '%s\n' "~${path_entry#${HOME}}"
-    printf '%s\n' "\$HOME${path_entry#${HOME}}"
-    printf '%s\n' "\${HOME}${path_entry#${HOME}}"
+  if [[ $path_entry == "${INSTALL_USER_HOME}"* ]]; then
+    printf '%s\n' "~${path_entry#${INSTALL_USER_HOME}}"
+    printf '%s\n' "\$HOME${path_entry#${INSTALL_USER_HOME}}"
+    printf '%s\n' "\${HOME}${path_entry#${INSTALL_USER_HOME}}"
   fi
+}
+
+append_line_for_install_user() {
+  local target_file=$1
+  local line=$2
+
+  if (( DRY_RUN )); then
+    log "dry-run: append PATH export to ${target_file}"
+    return 0
+  fi
+
+  if [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" touch "$target_file"
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" bash -lc 'grep -qxF -- "$1" "$2" || printf "\n%s\n" "$1" >>"$2"' _ "$line" "$target_file"
+    return $?
+  fi
+
+  touch "$target_file"
+  grep -qxF -- "$line" "$target_file" || printf '\n%s\n' "$line" >>"$target_file"
+}
+
+persist_user_path_entry() {
+  local path_entry=$1
+  local export_line="export PATH=\"${path_entry}:\$PATH\""
+  local targets=("${INSTALL_USER_HOME}/.profile")
+  local login_shell
+
+  login_shell="$(current_login_shell 2>/dev/null || true)"
+  case "${login_shell##*/}" in
+    zsh)
+      targets+=("${INSTALL_USER_HOME}/.zshrc" "${INSTALL_USER_HOME}/.zprofile")
+      ;;
+    bash)
+      targets+=("${INSTALL_USER_HOME}/.bashrc" "${INSTALL_USER_HOME}/.bash_profile")
+      ;;
+    *)
+      targets+=("${INSTALL_USER_HOME}/.bashrc" "${INSTALL_USER_HOME}/.zshrc")
+      ;;
+  esac
+
+  local seen=' '
+  local target
+  for target in "${targets[@]}"; do
+    [[ $seen == *" ${target} "* ]] && continue
+    seen+="${target} "
+    append_line_for_install_user "$target" "$export_line" || return 1
+  done
+
+  return 0
+}
+
+ensure_user_tool_path_persisted() {
+  local path_entry=$1
+
+  known_user_tool_path "$path_entry" || return 0
+  shell_config_references_path "$path_entry" && return 0
+
+  if persist_user_path_entry "$path_entry"; then
+    log "persisted ${path_entry} to shell startup files for ${INSTALL_USER_NAME}"
+    return 0
+  fi
+
+  return 1
 }
 
 shell_config_references_path() {
@@ -140,10 +403,129 @@ prepend_path_once() {
 }
 
 activate_user_tool_paths() {
-  prepend_path_once "${HOME}/.local/bin"
-  prepend_path_once "${HOME}/.cargo/bin"
-  prepend_path_once "${HOME}/.dotnet"
-  prepend_path_once "${HOME}/.dotnet/tools"
+  prepend_path_once "${INSTALL_USER_HOME}/.local/bin"
+  prepend_path_once "${INSTALL_USER_HOME}/.cargo/bin"
+  prepend_path_once "${INSTALL_USER_HOME}/.dotnet"
+  prepend_path_once "${INSTALL_USER_HOME}/.dotnet/tools"
+}
+
+source_env_file() {
+  local env_file=$1
+
+  [[ -f ${env_file} ]] || return 0
+
+  if (( DRY_RUN )); then
+    log "dry-run: source ${env_file}"
+    return 0
+  fi
+
+  # shellcheck disable=SC1090
+  source "$env_file"
+}
+
+activate_rust_environment() {
+  prepend_path_once "${INSTALL_USER_HOME}/.cargo/bin"
+  source_env_file "${INSTALL_USER_HOME}/.cargo/env"
+}
+
+activate_dotnet_environment() {
+  prepend_path_once "${INSTALL_USER_HOME}/.dotnet"
+  prepend_path_once "${INSTALL_USER_HOME}/.dotnet/tools"
+}
+
+npm_global_bin_dir() {
+  local npm_cmd
+
+  if is_wsl_environment; then
+    npm_cmd="$(native_npm_command 2>/dev/null || true)"
+  else
+    npm_cmd="$(command -v npm 2>/dev/null || true)"
+  fi
+
+  [[ -n ${npm_cmd} ]] || return 1
+
+  local prefix
+  prefix="$("$npm_cmd" prefix -g 2>/dev/null || true)"
+  [[ -n ${prefix} ]] || return 1
+
+  if [[ -d ${prefix}/bin ]]; then
+    printf '%s\n' "${prefix}/bin"
+    return 0
+  fi
+
+  if [[ -d ${prefix} ]]; then
+    printf '%s\n' "${prefix}"
+    return 0
+  fi
+
+  return 1
+}
+
+activate_npm_global_environment() {
+  local global_bin_dir
+
+  global_bin_dir="$(npm_global_bin_dir 2>/dev/null || true)"
+  [[ -n ${global_bin_dir} ]] || return 0
+
+  prepend_path_once "${global_bin_dir}"
+}
+
+ensure_native_command_link() {
+  local command_name=$1
+  local command_path
+  local target_path="$(install_user_bin_dir)/${command_name}"
+
+  if ! is_wsl_environment; then
+    return 0
+  fi
+
+  command_path="$(native_command_path "$command_name" 2>/dev/null || true)"
+  [[ -n ${command_path} ]] || return 1
+
+  if [[ ${command_path} == "$target_path" ]]; then
+    return 0
+  fi
+
+  if (( DRY_RUN )); then
+    log "dry-run: link ${target_path} -> ${command_path}"
+    return 0
+  fi
+
+  if [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" mkdir -p "$(dirname "$target_path")"
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" ln -sfn "$command_path" "$target_path"
+    log "linked ${target_path} -> ${command_path}"
+    return 0
+  fi
+
+  ensure_symlink "$command_path" "$target_path"
+}
+
+remove_install_user_file() {
+  local target_path=$1
+
+  if [[ ! -e ${target_path} && ! -L ${target_path} ]]; then
+    log "skip ${target_path}: not present"
+    return 0
+  fi
+
+  if (( DRY_RUN )); then
+    log "dry-run: rm -f ${target_path}"
+    return 0
+  fi
+
+  if [[ -n ${SUDO_USER:-} ]]; then
+    HOME="$INSTALL_USER_HOME" sudo -u "$SUDO_USER" rm -f "$target_path"
+  else
+    rm -f "$target_path"
+  fi
+}
+
+remove_native_command_link() {
+  local command_name=$1
+  local target_path="$(install_user_bin_dir)/${command_name}"
+
+  remove_install_user_file "$target_path"
 }
 
 activate_user_tool_paths
@@ -259,6 +641,37 @@ error() {
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
+}
+
+is_windows_mounted_path() {
+  local path_value=$1
+  [[ $path_value == /mnt/[a-zA-Z]/* ]]
+}
+
+native_command_path() {
+  local command_name=$1
+  local command_path
+
+  command_path="$(command -v "$command_name" 2>/dev/null || true)"
+  [[ -n $command_path ]] || return 1
+
+  if is_wsl_environment && is_windows_mounted_path "$command_path"; then
+    return 1
+  fi
+
+  printf '%s\n' "$command_path"
+}
+
+native_command_exists() {
+  native_command_path "$1" >/dev/null 2>&1
+}
+
+native_npm_command() {
+  native_command_path npm
+}
+
+native_node_command() {
+  native_command_path node
 }
 
 extract_semver() {
@@ -798,29 +1211,85 @@ remove_repo_symlink() {
 npm_global_install() {
   local package_name=$1
   local command_name=$2
+  local npm_cmd=
+  local npm_prefix="${INSTALL_USER_HOME}/.local"
 
-  if command_exists "$command_name"; then
+  activate_npm_global_environment
+
+  require_install_user_context "${package_name} installation" || return 1
+
+  if is_wsl_environment; then
+    if native_command_exists "$command_name"; then
+      ensure_native_command_link "$command_name" || true
+      log "${command_name} already available in WSL"
+      return 0
+    fi
+  elif command_exists "$command_name"; then
     log "${command_name} already available"
     return 0
   fi
 
-  if ! command_exists npm; then
+  if is_wsl_environment; then
+    npm_cmd="$(native_npm_command 2>/dev/null || true)"
+  else
+    npm_cmd="$(command -v npm 2>/dev/null || true)"
+  fi
+
+  if [[ -z ${npm_cmd} ]]; then
     warn "npm is required to install ${package_name}"
     return 1
   fi
 
-  run_cmd npm install -g "$package_name"
+  if (( DRY_RUN )); then
+    log "dry-run: env npm_config_prefix=${npm_prefix} ${npm_cmd} install -g ${package_name}"
+  else
+    run_as_install_user env npm_config_prefix="$npm_prefix" PATH="$(install_user_bin_dir):${PATH}" "$npm_cmd" install -g "$package_name" || return 1
+  fi
+  activate_npm_global_environment
+  ensure_user_tool_path_persisted "$(install_user_bin_dir)" || true
+
+  if is_wsl_environment; then
+    ensure_native_command_link "$command_name" || true
+  fi
+
+  if is_wsl_environment; then
+    if ! native_command_exists "$command_name"; then
+      warn "${package_name} installed but ${command_name} is still unavailable inside WSL"
+      return 1
+    fi
+    return 0
+  fi
+
+  if ! command_exists "$command_name"; then
+    warn "${package_name} installed but ${command_name} is still unavailable in this shell"
+    return 1
+  fi
 }
 
 npm_global_uninstall() {
   local package_name=$1
+  local npm_cmd=
+  local npm_prefix="${INSTALL_USER_HOME}/.local"
 
-  if ! command_exists npm; then
+  require_install_user_context "${package_name} uninstall" || return 1
+
+  if is_wsl_environment; then
+    npm_cmd="$(native_npm_command 2>/dev/null || true)"
+  else
+    npm_cmd="$(command -v npm 2>/dev/null || true)"
+  fi
+
+  if [[ -z ${npm_cmd} ]]; then
     log "skip npm uninstall for ${package_name}: npm not installed"
     return 0
   fi
 
-  run_cmd npm uninstall -g "$package_name"
+  if (( DRY_RUN )); then
+    log "dry-run: env npm_config_prefix=${npm_prefix} ${npm_cmd} uninstall -g ${package_name}"
+    return 0
+  fi
+
+  run_as_install_user env npm_config_prefix="$npm_prefix" PATH="$(install_user_bin_dir):${PATH}" "$npm_cmd" uninstall -g "$package_name"
 }
 
 cargo_bin() {
@@ -846,5 +1315,5 @@ curl_download() {
     return 1
   fi
 
-  run_cmd curl -fsSL "$url" -o "$destination"
+  run_cmd curl --connect-timeout 15 --max-time 300 -fsSL "$url" -o "$destination"
 }

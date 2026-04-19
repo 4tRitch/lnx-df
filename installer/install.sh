@@ -15,11 +15,69 @@ summary_label() {
 NON_INTERACTIVE=0
 ALL_COMPONENTS=0
 CHECKS_ONLY=0
+RESUME_REQUESTED=0
+STATE_RUN_INITIALIZED=0
 SELECTED_COMPONENTS=()
 SELECTED_PRESET=
 INSTALL_SUCCEEDED_COMPONENTS=()
 INSTALL_FAILED_COMPONENTS=()
 SKIPPED_STEPS=()
+
+state_resume_conflicts_with_options() {
+  (( ALL_COMPONENTS )) || (( CHECKS_ONLY )) || [[ -n ${SELECTED_PRESET} ]] || (( ${#SELECTED_COMPONENTS[@]} > 0 ))
+}
+
+finalize_install_state() {
+  local exit_code=$1
+
+  if (( ! STATE_RUN_INITIALIZED )); then
+    return 0
+  fi
+
+  if (( exit_code == 0 )); then
+    clear_install_state
+    return 0
+  fi
+
+  if [[ ${STATE_LAST_STATUS:-idle} != failed ]]; then
+    mark_install_state_failed "${STATE_CURRENT_PHASE:-failed}" "${STATE_CURRENT_COMPONENT:-}"
+  fi
+}
+
+build_pending_install_components() {
+  local pending=()
+  local component
+
+  for component in "${SELECTED_COMPONENTS[@]}"; do
+    if (( RESUME_REQUESTED )) && install_state_has_completed_install "$component"; then
+      log "resume: skipping completed install for $(component_label "$component")"
+      INSTALL_SUCCEEDED_COMPONENTS+=("$component")
+      continue
+    fi
+
+    pending+=("$component")
+  done
+
+  printf '%s\n' "${pending[@]}"
+}
+
+build_pending_check_components() {
+  local pending=()
+  local component
+
+  for component in "${SELECTED_COMPONENTS[@]}"; do
+    if (( RESUME_REQUESTED )) && install_state_has_completed_check "$component"; then
+      log "resume: skipping completed check for $(component_label "$component")"
+      continue
+    fi
+
+    pending+=("$component")
+  done
+
+  printf '%s\n' "${pending[@]}"
+}
+
+trap 'finalize_install_state "$?"' EXIT
 
 join_by() {
   local separator=$1
@@ -67,7 +125,7 @@ interactive_home_prompt() {
   cat <<'EOF'
 Workspace setup
 
-Pick a path. Gum gives the polished panel view; plain mode stays available when needed.
+Pick a path.
 EOF
 }
 
@@ -200,6 +258,7 @@ print_final_summary() {
     if (( ${#INSTALL_FAILED_COMPONENTS[@]} > 0 )); then
       printf '[lnx-df] failed installs: %s\n' "$(component_label_list "${INSTALL_FAILED_COMPONENTS[@]}")"
       next_steps+=("review the failed install logs and rerun the affected components")
+      next_steps+=("resume this run with ./install.sh --resume once the blocking issue is fixed")
     fi
   fi
 
@@ -212,6 +271,7 @@ print_final_summary() {
   if (( ${#CHECK_FAILED_COMPONENTS[@]} > 0 )); then
     printf '[lnx-df] failed checks: %s\n' "$(component_label_list "${CHECK_FAILED_COMPONENTS[@]}")"
     next_steps+=("rerun checks with ./install.sh --checks-only and the same preset/components after addressing the failures")
+    next_steps+=("or continue the saved run with ./install.sh --resume if you want to keep the previous progress")
   fi
 
   if (( ${#SKIPPED_STEPS[@]} > 0 )); then
@@ -256,6 +316,7 @@ Options:
   --preset NAME        Install a preset: basic, dev, gamedev, full, custom
   --component NAME     Install one component; repeat as needed
   --checks-only        Skip installation and run checks only
+  --resume             Resume the last interrupted run
   --dry-run            Print actions without changing the system
   --non-interactive    Do not prompt; requires --all, --preset, or --component
   --list-components    Show supported component ids
@@ -282,6 +343,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --checks-only)
       CHECKS_ONLY=1
+      shift
+      ;;
+    --resume)
+      RESUME_REQUESTED=1
       shift
       ;;
     --dry-run)
@@ -315,7 +380,37 @@ done
 load_platform_info
 log "platform: $(describe_platform)"
 
-if (( ! ALL_COMPONENTS )) && (( ${#SELECTED_COMPONENTS[@]} == 0 )) && [[ -z ${SELECTED_PRESET} ]] && (( ! NON_INTERACTIVE )); then
+if (( RESUME_REQUESTED )) && state_resume_conflicts_with_options; then
+  error "--resume cannot be combined with --all, --preset, --component, or --checks-only"
+  exit 1
+fi
+
+if (( RESUME_REQUESTED )); then
+  if ! load_install_state; then
+    error "no saved installer state found at ${INSTALL_STATE_FILE}"
+    exit 1
+  fi
+
+  RESUME_FROM_PHASE=${STATE_CURRENT_PHASE}
+  RESUME_FROM_COMPONENT=${STATE_CURRENT_COMPONENT}
+
+  SELECTED_PRESET=${STATE_SELECTED_PRESET}
+  SELECTED_COMPONENTS=("${STATE_SELECTED_COMPONENTS[@]}")
+  CHECKS_ONLY=${STATE_CHECKS_ONLY}
+  ALL_COMPONENTS=${STATE_ALL_COMPONENTS}
+  resume_install_state_run
+  STATE_RUN_INITIALIZED=1
+
+  log "resuming previous installer run"
+  if [[ -n ${RESUME_FROM_COMPONENT} ]]; then
+    log "last saved step: ${RESUME_FROM_PHASE} (${RESUME_FROM_COMPONENT})"
+  else
+    log "last saved step: ${RESUME_FROM_PHASE}"
+  fi
+fi
+
+if (( ! RESUME_REQUESTED )) && (( ! ALL_COMPONENTS )) && (( ${#SELECTED_COMPONENTS[@]} == 0 )) && [[ -z ${SELECTED_PRESET} ]] && (( ! NON_INTERACTIVE )); then
+  ui_prepare_backend
   interactive_action_menu || exit 0
 fi
 
@@ -376,10 +471,32 @@ if [[ -n ${SELECTED_PRESET} ]]; then
   log "selected preset: ${SELECTED_PRESET}"
 fi
 
+if (( ! STATE_RUN_INITIALIZED )); then
+  start_install_state_run "$CHECKS_ONLY" "$ALL_COMPONENTS" "$SELECTED_PRESET" "${SELECTED_COMPONENTS[@]}"
+  STATE_RUN_INITIALIZED=1
+fi
+
 if (( CHECKS_ONLY )); then
-  if ! run_component_checks "${SELECTED_COMPONENTS[@]}"; then
-    :
+  mapfile -t PENDING_CHECK_COMPONENTS < <(build_pending_check_components)
+
+  if (( ${#PENDING_CHECK_COMPONENTS[@]} > 0 )); then
+    if ! run_component_checks "${PENDING_CHECK_COMPONENTS[@]}"; then
+      mark_install_state_failed checks
+    fi
+  else
+    CHECK_PASSED_COMPONENTS=()
+    log "resume: all requested checks were already completed"
   fi
+
+  if (( RESUME_REQUESTED )); then
+    local_component=
+    for local_component in "${STATE_COMPLETED_CHECK_COMPONENTS[@]}"; do
+      if state_array_contains "$local_component" "${SELECTED_COMPONENTS[@]}" && ! state_array_contains "$local_component" "${CHECK_PASSED_COMPONENTS[@]}"; then
+        CHECK_PASSED_COMPONENTS+=("$local_component")
+      fi
+    done
+  fi
+
   EXIT_CODE=0
   if (( ${#CHECK_FAILED_COMPONENTS[@]} > 0 )); then
     EXIT_CODE=1
@@ -388,12 +505,17 @@ if (( CHECKS_ONLY )); then
   exit "$EXIT_CODE"
 fi
 
-for component in "${SELECTED_COMPONENTS[@]}"; do
+mapfile -t PENDING_INSTALL_COMPONENTS < <(build_pending_install_components)
+
+for component in "${PENDING_INSTALL_COMPONENTS[@]}"; do
+  set_install_state_phase install "$component"
   log "installing $(component_label "$component")"
   if install_component "$component"; then
     INSTALL_SUCCEEDED_COMPONENTS+=("$component")
+    mark_install_state_install_completed "$component"
   else
     INSTALL_FAILED_COMPONENTS+=("$component")
+    mark_install_state_failed install "$component"
   fi
 done
 
@@ -403,8 +525,23 @@ if (( DRY_RUN )); then
   log "dry-run enabled; skipping post-install checks"
   SKIPPED_STEPS+=("post-install checks")
 else
-  if ! run_component_checks "${SELECTED_COMPONENTS[@]}"; then
-    :
+  mapfile -t PENDING_CHECK_COMPONENTS < <(build_pending_check_components)
+
+  if (( ${#PENDING_CHECK_COMPONENTS[@]} > 0 )); then
+    if ! run_component_checks "${PENDING_CHECK_COMPONENTS[@]}"; then
+      mark_install_state_failed checks
+    fi
+  else
+    CHECK_PASSED_COMPONENTS=()
+    log "resume: all requested checks were already completed"
+  fi
+
+  if (( RESUME_REQUESTED )); then
+    for component in "${STATE_COMPLETED_CHECK_COMPONENTS[@]}"; do
+      if state_array_contains "$component" "${SELECTED_COMPONENTS[@]}" && ! state_array_contains "$component" "${CHECK_PASSED_COMPONENTS[@]}"; then
+        CHECK_PASSED_COMPONENTS+=("$component")
+      fi
+    done
   fi
   if (( ${#CHECK_FAILED_COMPONENTS[@]} > 0 )); then
     EXIT_CODE=1
@@ -416,5 +553,6 @@ if (( ${#INSTALL_FAILED_COMPONENTS[@]} > 0 )); then
 fi
 
 log "install flow finished"
+set_install_state_phase completed
 print_final_summary "$EXIT_CODE"
 exit "$EXIT_CODE"
