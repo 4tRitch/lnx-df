@@ -1,8 +1,10 @@
-typeset -g ZSH_SHARED_CONFIG_ROOT="${ZSH_SHARED_CONFIG_ROOT:-/home/at_ritch/lnx-df/config}"
+typeset -g ZSH_BOOTSTRAP_FILE="${${(%):-%N}:A}"
+typeset -g ZSH_SHARED_CONFIG_ROOT="${ZSH_SHARED_CONFIG_ROOT:-${ZSH_BOOTSTRAP_FILE:h:h}}"
+typeset -g DFL="${DFL:-${ZSH_SHARED_CONFIG_ROOT:h}}"
 
 if [[ ! -d $ZSH_SHARED_CONFIG_ROOT ]]; then
   for candidate in \
-    "/home/at_ritch/lnx-df/config" \
+    "${DFL}/config" \
     "$HOME/.config"; do
     if [[ -d $candidate ]]; then
       ZSH_SHARED_CONFIG_ROOT=$candidate
@@ -12,14 +14,12 @@ if [[ ! -d $ZSH_SHARED_CONFIG_ROOT ]]; then
 fi
 
 typeset -g DCONF="$ZSH_SHARED_CONFIG_ROOT"
-typeset -g DEVD="${DEVD:-/home/at_ritch/dev}"
-typeset -g DFL="${DFL:-/home/at_ritch/lnx-df}"
+typeset -g DEVD="${DEVD:-${HOME}/dev}"
 typeset -g ZSH_IS_ROOT=0
 
 if (( EUID == 0 )); then
   ZSH_IS_ROOT=1
-  DEVD=/home/at_ritch/dev
-  DFL=/home/at_ritch/lnx-df
+  DEVD=${DEVD:-${HOME}/dev}
 fi
 
 typeset -g ZINIT_HOME="${ZINIT_HOME:-${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git}"

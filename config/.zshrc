@@ -1,12 +1,15 @@
-source "${HOME}/lnx-df/config/zsh/bootstrap.zsh"
+typeset -g LNX_DF_CONFIG_ROOT="${LNX_DF_CONFIG_ROOT:-${${(%):-%N}:A:h}}"
+typeset -g LNX_DF_REPO="${LNX_DF_REPO:-${LNX_DF_CONFIG_ROOT:h}}"
+
+source "${LNX_DF_CONFIG_ROOT}/zsh/bootstrap.zsh"
 source "${DCONF}/zsh/root-safe.zsh"
-# source "${DCONF}/zsh/psdk.zsh" # Only Uncomment if you have de SDK's
+ # source "${DCONF}/zsh/psdk.zsh" # Only Uncomment if you have de SDK's
 
 
 
 
 
 # opencode
-if [[ -d /home/at_ritch/.opencode/bin ]]; then
-  export PATH=/home/at_ritch/.opencode/bin:$PATH
+if [[ -d ${HOME}/.opencode/bin ]]; then
+  export PATH=${HOME}/.opencode/bin:$PATH
 fi
