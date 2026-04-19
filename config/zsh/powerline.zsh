@@ -23,6 +23,7 @@ typeset -gr POWERLINE_ROOT_LOGIN_FG="#D19A66"
 typeset -gr POWERLINE_ROOT_SUDO_FG="#E5C07B"
 typeset -gr POWERLINE_GIT_CACHE_MS="${POWERLINE_GIT_CACHE_MS:-1500}"
 typeset -gr POWERLINE_FETCH_STALE_SECONDS="${POWERLINE_FETCH_STALE_SECONDS:-1800}"
+typeset -gr POWERLINE_REMOTE_TIMEOUT_SECONDS="${POWERLINE_REMOTE_TIMEOUT_SECONDS:-1.5}"
 
 # --- vcs_info: branch detection without parsing full status every draw ---
 zstyle ':vcs_info:*' enable git
@@ -113,6 +114,26 @@ powerline_pwd_label() {
   print -r -- "${PWD:t}"
 }
 
+powerline_remote_has_unfetched_changes() {
+  local upstream=$1
+  local remote=${upstream%%/*}
+  local remote_ref=${upstream#*/}
+  local local_tracking='' head_hash='' remote_hash=''
+
+  [[ -n $upstream ]] || return 1
+  [[ -n $remote && -n $remote_ref && $remote != $upstream ]] || return 1
+  command -v timeout >/dev/null 2>&1 || return 1
+
+  local_tracking=$(command git rev-parse --verify "refs/remotes/${upstream}" 2>/dev/null) || local_tracking=''
+  head_hash=$(command git rev-parse --verify HEAD 2>/dev/null) || head_hash=''
+  remote_hash=$(command timeout "${POWERLINE_REMOTE_TIMEOUT_SECONDS}s" git ls-remote --exit-code --heads "$remote" "refs/heads/${remote_ref}" 2>/dev/null | awk 'NR==1 { print $1 }') || return 1
+
+  [[ -n $remote_hash ]] || return 1
+  [[ $remote_hash == $local_tracking ]] && return 1
+  [[ -n $head_hash && $remote_hash == $head_hash ]] && return 1
+  return 0
+}
+
 powerline_git_segment() {
   local branch=$1
 
@@ -144,7 +165,7 @@ powerline_git_segment() {
       fi
     fi
 
-    if (( POWERLINE_GIT_LAST_FETCH_STALE )) && [[ $first_line != *'ahead '* && $first_line != *'behind '* ]]; then
+    if (( POWERLINE_GIT_LAST_FETCH_STALE )) && powerline_remote_has_unfetched_changes "$upstream_line"; then
       symbols+='?'
     fi
   else
