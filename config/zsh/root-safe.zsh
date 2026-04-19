@@ -13,6 +13,7 @@ else
 fi
 
 source "${DCONF}/zsh/aliases.zsh"
+source "${DCONF}/zsh/items-list.zsh"
 source "${DCONF}/zsh/git.zsh"
 source "${DCONF}/zsh/powerline.zsh"
 
