@@ -1,4 +1,8 @@
 typeset -g ZSH_CAN_LOAD_ZINIT=0
+typeset -g ZSH_COMPINIT_DUMP="${XDG_CACHE_HOME:-${HOME}/.cache}/zsh/zcompdump"
+
+mkdir -p "${ZSH_COMPINIT_DUMP:h}"
+autoload -Uz compinit
 
 if [[ -r "${ZINIT_HOME}/zinit.zsh" ]]; then
   ZSH_CAN_LOAD_ZINIT=1
@@ -7,10 +11,9 @@ fi
 
 if [[ $ZSH_CAN_LOAD_ZINIT -eq 1 ]]; then
   source "${DCONF}/zsh/plugins.zsh"
-else
-  autoload -Uz compinit
-  compinit
 fi
+
+compinit -C -d "${ZSH_COMPINIT_DUMP}"
 
 source "${DCONF}/zsh/aliases.zsh"
 source "${DCONF}/zsh/items-list.zsh"

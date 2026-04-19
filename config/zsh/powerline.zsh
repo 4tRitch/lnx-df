@@ -4,6 +4,7 @@ colors
 setopt PROMPT_SUBST
 
 zmodload zsh/datetime
+zmodload zsh/stat
 
 # PowerShell prompt visual parity, optimized for Zsh.
 # Target shape: "cwd at HH:mm [branch symbols] $"
@@ -20,6 +21,8 @@ typeset -gr POWERLINE_META_FG="#7F848E"
 typeset -gr POWERLINE_ROOT_FG="#E5C07B"
 typeset -gr POWERLINE_ROOT_LOGIN_FG="#D19A66"
 typeset -gr POWERLINE_ROOT_SUDO_FG="#E5C07B"
+typeset -gr POWERLINE_GIT_CACHE_MS="${POWERLINE_GIT_CACHE_MS:-1500}"
+typeset -gr POWERLINE_FETCH_STALE_SECONDS="${POWERLINE_FETCH_STALE_SECONDS:-1800}"
 
 # --- vcs_info: branch detection without parsing full status every draw ---
 zstyle ':vcs_info:*' enable git
@@ -39,9 +42,29 @@ typeset -g POWERLINE_DURATION_SEGMENT=''
 typeset -g POWERLINE_CONTEXT_SEGMENT=''
 typeset -g POWERLINE_USER_SYMBOL='$'
 typeset -g POWERLINE_CMD_START=0
+typeset -g POWERLINE_GIT_LAST_PWD=''
+typeset -g POWERLINE_GIT_LAST_BRANCH=''
+typeset -g POWERLINE_GIT_LAST_STATUS=''
+typeset -g POWERLINE_GIT_LAST_CHECK=0
+typeset -g POWERLINE_GIT_LAST_FETCH_STALE=0
+typeset -g POWERLINE_FORCE_GIT_REFRESH=0
+
+powerline_should_refresh_git() {
+  local cmd=$1
+
+  [[ $cmd =~ '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)(fetch|pull|push)([[:space:]]|$)' ]] && return 0
+  [[ $cmd =~ '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)remote([[:space:]]+)update([[:space:]]|$)' ]] && return 0
+  [[ $cmd =~ '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)(checkout|switch|commit|merge|rebase|reset|stash|cherry-pick|revert)([[:space:]]|$)' ]] && return 0
+  return 1
+}
 
 powerline_preexec() {
+  local cmd=$1
   POWERLINE_CMD_START=$EPOCHREALTIME
+
+  if powerline_should_refresh_git "$cmd"; then
+    POWERLINE_FORCE_GIT_REFRESH=1
+  fi
 }
 
 powerline_elapsed_ms() {
@@ -88,6 +111,59 @@ powerline_pwd_label() {
   fi
 
   print -r -- "${PWD:t}"
+}
+
+powerline_git_segment() {
+  local branch=$1
+
+  if (( ! POWERLINE_FORCE_GIT_REFRESH )) && [[ $PWD == $POWERLINE_GIT_LAST_PWD && $branch == $POWERLINE_GIT_LAST_BRANCH && -n $POWERLINE_GIT_LAST_STATUS && $POWERLINE_GIT_LAST_CHECK != 0 ]]; then
+    local cached_age_ms
+    cached_age_ms=$(powerline_elapsed_ms "$POWERLINE_GIT_LAST_CHECK" "$EPOCHREALTIME")
+    if (( cached_age_ms < POWERLINE_GIT_CACHE_MS )); then
+      print -r -- "$POWERLINE_GIT_LAST_STATUS"
+      return 0
+    fi
+  fi
+
+  local porcelain first_line symbols='' status_segment='' upstream_line='' fetch_head_path=''
+  local -a stat_result
+  porcelain=$(command git status --porcelain=2 --branch --no-renames 2>/dev/null) || porcelain=''
+  first_line=${porcelain%%$'\n'*}
+  upstream_line=${${(M)${(f)porcelain}:#'# branch.upstream '*}#'# branch.upstream '}
+
+  [[ $first_line == *'ahead '* ]] && symbols+='>'
+  [[ $first_line == *'behind '* ]] && symbols+='<'
+  [[ $porcelain == *$'\n1 '* || $porcelain == *$'\n2 '* || $porcelain == *$'\nu '* || $porcelain == *$'\n? '* ]] && symbols+='!'
+
+  if [[ -n $upstream_line ]]; then
+    fetch_head_path=$(command git rev-parse --git-path FETCH_HEAD 2>/dev/null) || fetch_head_path=''
+    POWERLINE_GIT_LAST_FETCH_STALE=1
+    if [[ -n $fetch_head_path && -e $fetch_head_path ]] && zstat -A stat_result +mtime -- "$fetch_head_path" 2>/dev/null; then
+      if (( EPOCHSECONDS - stat_result[1] <= POWERLINE_FETCH_STALE_SECONDS )); then
+        POWERLINE_GIT_LAST_FETCH_STALE=0
+      fi
+    fi
+
+    if (( POWERLINE_GIT_LAST_FETCH_STALE )) && [[ $first_line != *'ahead '* && $first_line != *'behind '* ]]; then
+      symbols+='?'
+    fi
+  else
+    POWERLINE_GIT_LAST_FETCH_STALE=0
+  fi
+
+  if [[ -n $symbols ]]; then
+    status_segment=" %F{$POWERLINE_GIT_FG}[${branch} ${symbols}]%f"
+  else
+    status_segment=" %F{$POWERLINE_GIT_FG}[${branch}]%f"
+  fi
+
+  POWERLINE_GIT_LAST_PWD=$PWD
+  POWERLINE_GIT_LAST_BRANCH=$branch
+  POWERLINE_GIT_LAST_STATUS=$status_segment
+  POWERLINE_GIT_LAST_CHECK=$EPOCHREALTIME
+  POWERLINE_FORCE_GIT_REFRESH=0
+
+  print -r -- "$status_segment"
 }
 
 powerline_precmd() {
@@ -138,24 +214,7 @@ powerline_precmd() {
   POWERLINE_GIT_SEGMENT=''
 
   if [[ -n ${vcs_info_msg_0_} ]]; then
-    local branch=${vcs_info_msg_0_}
-    local git_dir porcelain first_line symbols=''
-
-    git_dir=$(command git rev-parse --git-dir 2>/dev/null) || git_dir=''
-    if [[ -n $git_dir ]]; then
-      porcelain=$(command git status --porcelain=2 --branch 2>/dev/null)
-      first_line=${porcelain%%$'\n'*}
-
-      [[ $first_line == *'ahead '* ]] && symbols+='>'
-      [[ $first_line == *'behind '* ]] && symbols+='<'
-      [[ $porcelain == *$'\n1 '* || $porcelain == *$'\n2 '* || $porcelain == *$'\nu '* || $porcelain == *$'\n? '* ]] && symbols+='!'
-
-      if [[ -n $symbols ]]; then
-        POWERLINE_GIT_SEGMENT=" %F{$POWERLINE_GIT_FG}[${branch} ${symbols}]%f"
-      else
-        POWERLINE_GIT_SEGMENT=" %F{$POWERLINE_GIT_FG}[${branch}]%f"
-      fi
-    fi
+    POWERLINE_GIT_SEGMENT=$(powerline_git_segment "${vcs_info_msg_0_}")
   fi
 
   PROMPT="%F{$POWERLINE_DIR_FG}${POWERLINE_CWD}%f${POWERLINE_HOST_SEGMENT} %F{$POWERLINE_TIME_FG}at ${POWERLINE_TIME}%f${POWERLINE_DURATION_SEGMENT}${POWERLINE_STATUS_SEGMENT}${POWERLINE_GIT_SEGMENT}${POWERLINE_CONTEXT_SEGMENT} ${POWERLINE_USER_SYMBOL} "
