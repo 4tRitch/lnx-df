@@ -458,7 +458,7 @@ install_component() {
 check_component() {
   case "$1" in
     dotfiles) check_dotfiles ;;
-    zsh) check_command_component zsh Zsh ;;
+    zsh) check_zsh ;;
     kitty) check_command_component kitty Kitty ;;
     nerd-fonts) check_nerd_fonts ;;
     tmux) check_tmux ;;
@@ -521,26 +521,25 @@ uninstall_component() {
 }
 
 install_dotfiles() {
-  local home_config="${HOME}/.config"
-  run_cmd mkdir -p "$home_config"
-
   ensure_symlink "${CONFIG_ROOT}/.zshrc" "${HOME}/.zshrc"
-  ensure_symlink "${CONFIG_ROOT}/zsh" "${home_config}/zsh"
-  ensure_symlink "${CONFIG_ROOT}/nvim" "${home_config}/nvim"
+  ensure_symlink "${CONFIG_ROOT}/zsh" "${HOME}/.config/zsh"
+  ensure_symlink "${CONFIG_ROOT}/nvim" "${HOME}/.config/nvim"
 
-  if [[ -d ${CONFIG_ROOT}/kitty ]]; then
-    ensure_symlink "${CONFIG_ROOT}/kitty" "${home_config}/kitty"
-  fi
+  remove_repo_symlink "${HOME}/.config/kitty"
+  ensure_symlink "${CONFIG_ROOT}/kitty/kitty.conf" "${HOME}/.config/kitty/kitty.conf"
 
-  if [[ -d ${CONFIG_ROOT}/tmux ]]; then
-    ensure_symlink "${CONFIG_ROOT}/tmux" "${home_config}/tmux"
-  fi
+  remove_repo_symlink "${HOME}/.config/tmux"
+  ensure_symlink "${CONFIG_ROOT}/tmux/tmux.conf" "${HOME}/.config/tmux/tmux.conf"
+  ensure_symlink "${HOME}/.config/tmux/tmux.conf" "${HOME}/.tmux.conf"
 }
 
 uninstall_dotfiles() {
   remove_repo_symlink "${HOME}/.zshrc"
   remove_repo_symlink "${HOME}/.config/zsh"
   remove_repo_symlink "${HOME}/.config/nvim"
+  remove_repo_symlink "${HOME}/.config/kitty/kitty.conf"
+  remove_repo_symlink "${HOME}/.tmux.conf"
+  remove_repo_symlink "${HOME}/.config/tmux/tmux.conf"
   remove_repo_symlink "${HOME}/.config/kitty"
   remove_repo_symlink "${HOME}/.config/tmux"
 }
@@ -548,10 +547,11 @@ uninstall_dotfiles() {
 install_zsh() {
   if command_exists zsh; then
     log "zsh already installed"
-    return 0
+  else
+    install_package_key zsh || return 1
   fi
 
-  install_package_key zsh
+  set_default_shell_to_zsh
 }
 
 install_kitty() {
@@ -837,14 +837,9 @@ check_dotfiles() {
   check_symlink_target "${HOME}/.zshrc" "${CONFIG_ROOT}/.zshrc" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/zsh" "${CONFIG_ROOT}/zsh" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/nvim" "${CONFIG_ROOT}/nvim" || failures=$((failures + 1))
-
-  if [[ -d ${CONFIG_ROOT}/kitty ]]; then
-    check_symlink_target "${HOME}/.config/kitty" "${CONFIG_ROOT}/kitty" || failures=$((failures + 1))
-  fi
-
-  if [[ -d ${CONFIG_ROOT}/tmux ]]; then
-    check_symlink_target "${HOME}/.config/tmux" "${CONFIG_ROOT}/tmux" || failures=$((failures + 1))
-  fi
+  check_symlink_target "${HOME}/.config/kitty/kitty.conf" "${CONFIG_ROOT}/kitty/kitty.conf" || failures=$((failures + 1))
+  check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
+  check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
 
   (( failures == 0 ))
 }
@@ -852,10 +847,82 @@ check_dotfiles() {
 check_tmux() {
   local failures=0
   check_command_component tmux Tmux || failures=$((failures + 1))
-  if [[ -d ${CONFIG_ROOT}/tmux ]]; then
-    check_symlink_target "${HOME}/.config/tmux" "${CONFIG_ROOT}/tmux" || failures=$((failures + 1))
-  fi
+  check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
+  check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
   (( failures == 0 ))
+}
+
+check_zsh() {
+  local failures=0
+
+  check_command_component zsh Zsh || failures=$((failures + 1))
+
+  if default_shell_is_zsh; then
+    log "check passed: zsh is the default shell"
+  elif (( EUID == 0 )) || is_wsl_environment || is_container_environment || ! command_exists chsh; then
+    warn "check skipped: default shell is not zsh, and automatic shell switching is unsupported in this context"
+  else
+    warn "check failed: default shell is not zsh; run chsh -s \"$(command -v zsh)\" manually if the installer could not change it"
+    failures=$((failures + 1))
+  fi
+
+  (( failures == 0 ))
+}
+
+set_default_shell_to_zsh() {
+  local zsh_path
+
+  zsh_path="$(command -v zsh 2>/dev/null || true)"
+  if [[ -z $zsh_path ]]; then
+    warn "zsh was not found after installation; skipping default-shell change"
+    return 0
+  fi
+
+  if default_shell_is_zsh; then
+    log "zsh is already the default shell"
+    return 0
+  fi
+
+  if (( EUID == 0 )); then
+    warn "zsh is installed, but this installer is running as root so it will not change the user's login shell; run chsh -s \"${zsh_path}\" manually as the target user"
+    return 0
+  fi
+
+  if is_wsl_environment; then
+    warn "zsh is installed, but this looks like WSL so the installer will not change the login shell automatically; run chsh -s \"${zsh_path}\" manually if desired"
+    return 0
+  fi
+
+  if is_container_environment; then
+    warn "zsh is installed, but this looks like a container so the installer will not change the login shell automatically; run chsh -s \"${zsh_path}\" manually if desired"
+    return 0
+  fi
+
+  if ! command_exists chsh; then
+    warn "zsh is installed, but chsh is unavailable; run chsh -s \"${zsh_path}\" manually to make it the default shell"
+    return 0
+  fi
+
+  if [[ ! -r /etc/shells ]] || ! grep -Fxq -- "$zsh_path" /etc/shells 2>/dev/null; then
+    warn "zsh is installed, but ${zsh_path} is not listed in /etc/shells; add it there first or set the login shell manually with chsh"
+    return 0
+  fi
+
+  if ! ui_has_tty; then
+    warn "zsh is installed, but no interactive tty is available for chsh; run chsh -s \"${zsh_path}\" manually after entering your password"
+    return 0
+  fi
+
+  if (( DRY_RUN )); then
+    log "dry-run: chsh -s ${zsh_path}"
+    return 0
+  fi
+
+  if chsh -s "$zsh_path"; then
+    log "default shell changed to zsh"
+  else
+    warn "automatic shell change failed; run chsh -s \"${zsh_path}\" manually after entering your password"
+  fi
 }
 
 check_nvim() {

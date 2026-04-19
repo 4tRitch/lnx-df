@@ -148,6 +148,75 @@ activate_user_tool_paths() {
 
 activate_user_tool_paths
 
+is_wsl_environment() {
+  [[ -n ${WSL_INTEROP:-} || -n ${WSL_DISTRO_NAME:-} ]] && return 0
+
+  if [[ -r /proc/version ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+    return 0
+  fi
+
+  return 1
+}
+
+is_container_environment() {
+  [[ -f /.dockerenv || -f /run/.containerenv ]] && return 0
+
+  if [[ -r /proc/1/cgroup ]] && grep -Eq '(docker|containerd|podman|lxc)' /proc/1/cgroup 2>/dev/null; then
+    return 0
+  fi
+
+  return 1
+}
+
+current_login_shell() {
+  local username=${SUDO_USER:-${USER:-}}
+  local passwd_entry=
+  local getent_cmd=
+
+  if [[ -z $username ]]; then
+    username="$(id -un 2>/dev/null || true)"
+  fi
+
+  getent_cmd="$(command -v getent 2>/dev/null || true)"
+  if [[ -n $username && -n $getent_cmd ]]; then
+    passwd_entry="$(getent passwd "$username" 2>/dev/null || true)"
+  fi
+
+  if [[ -z $passwd_entry && -n $username && -r /etc/passwd ]]; then
+    passwd_entry="$(awk -F: -v user="$username" '$1 == user { print; exit }' /etc/passwd)"
+  fi
+
+  [[ -n $passwd_entry ]] || return 1
+  printf '%s\n' "${passwd_entry##*:}"
+}
+
+resolved_shell_path() {
+  local shell_path=$1
+
+  [[ -n $shell_path ]] || return 1
+
+  if command_exists readlink; then
+    readlink -f "$shell_path" 2>/dev/null || printf '%s\n' "$shell_path"
+  else
+    printf '%s\n' "$shell_path"
+  fi
+}
+
+default_shell_is_zsh() {
+  local current_shell
+  local zsh_path
+  local resolved_current_shell
+  local resolved_zsh_path
+
+  current_shell="$(current_login_shell 2>/dev/null || true)"
+  zsh_path="$(command -v zsh 2>/dev/null || true)"
+
+  [[ -n $current_shell && -n $zsh_path ]] || return 1
+  resolved_current_shell="$(resolved_shell_path "$current_shell")"
+  resolved_zsh_path="$(resolved_shell_path "$zsh_path")"
+  [[ $resolved_current_shell == "$resolved_zsh_path" ]]
+}
+
 supports_color() {
   [[ -t 1 || -t 2 ]] && [[ ${TERM:-dumb} != dumb ]]
 }
