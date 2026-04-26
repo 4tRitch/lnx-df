@@ -1,0 +1,13 @@
+* {
+  font-family: CaskaydiaCoveNerdFont;
+  font-size: 13px;
+}
+
+window#waybar {
+  background: rgba(20, 20, 20, 0.9);
+  color: white;
+}
+
+#tray {
+  padding: 0 10px;
+}

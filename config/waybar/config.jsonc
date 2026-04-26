@@ -1,0 +1,19 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 30,
+  "exclusive": true,
+
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "pulseaudio", "network"],
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 10
+  },
+
+  "clock": {
+    "format": "{:%H:%M}"
+  }
+}

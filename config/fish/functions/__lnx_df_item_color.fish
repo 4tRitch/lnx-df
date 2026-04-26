@@ -1,0 +1,46 @@
+function __lnx_df_item_color --argument-names key
+  switch $key
+    case '.folder'
+      set_color brwhite
+    case '.png' '.jpg' '.jpeg' '.webp' '.gif' '.ico'
+      set_color '#F65F9C'
+    case '.mkv' '.mp4' '.mov' '.avi' '.webm' '.flv'
+      set_color '#9391C3'
+    case '.ogg' '.wav' '.mp3' '.m4a' '.flac' '.aac' '.aiff'
+      set_color '#B2A8FF'
+    case '.zip' '.rar' '.7z'
+      set_color '#EFEA5F'
+    case '.exe' '.msi'
+      set_color '#FF4687'
+    case '.pdf'
+      set_color '#FF5050'
+    case '.doc' '.docx'
+      set_color '#6BA4FF'
+    case '.xls' '.xlsx' '.xml' '.csv'
+      set_color '#8CFF8C'
+    case '.ps1' '.bat' '.go' '.mod' '.sum'
+      set_color '#6EBFFC'
+    case '.sh' '.zsh' '.zshrc'
+      set_color '#4DC94D'
+    case '.conf'
+      set_color '#D6BE5C'
+    case '.md'
+      set_color white
+    case '.gitignore' '.gitattributes' '.git'
+      set_color '#F50000'
+    case '.js' '.jsx' '.json' '.jsonc' license
+      set_color '#E5C07B'
+    case '.lua'
+      set_color '#6E77FA'
+    case '.cmakelists' '.c' '.clangd' '.cpp' '.h'
+      set_color '#838CF2'
+    case '.rs' '.toml' '.lock'
+      set_color '#F4506F'
+    case '.cs' '.csproj' '.sln'
+      set_color '#A283F2'
+    case '.sql' '.psql'
+      set_color '#EBEBEB'
+    case '*'
+      set_color brblack
+  end
+end
