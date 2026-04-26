@@ -1,19 +1,47 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 30,
+  "height": 34,
   "exclusive": true,
+  "spacing": 6,
 
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "pulseaudio", "network"],
+  "modules-right": ["tray", "custom/bluetooth", "pulseaudio", "network"],
+
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "sort-by-number": true,
+    "all-outputs": true,
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
 
   "tray": {
     "icon-size": 18,
     "spacing": 10
   },
 
+  "custom/bluetooth": {
+    "exec": "~/.config/waybar/scripts/bluetooth-devices.sh --status",
+    "return-type": "json",
+    "interval": 5,
+    "on-click": "~/.config/waybar/scripts/bluetooth-devices.sh --menu",
+    "tooltip": true
+  },
+
+  "pulseaudio": {
+    "format": "[  {volume}%]",
+    "format-muted": "[󰝟  muted]",
+    "scroll-step": 5,
+    "max-volume": 150,
+    "on-click": "~/.config/waybar/scripts/audio-devices.sh --menu",
+    "tooltip-format": "{desc}\nScroll: volume ±5%\nClick: outputs + microphones"
+  },
+
   "clock": {
-    "format": "{:%H:%M}"
+    "format": "[󰥔  {:%a %d/%m/%Y  %H:%M}]",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>"
   }
 }
