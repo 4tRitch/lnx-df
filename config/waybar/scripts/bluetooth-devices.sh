@@ -32,6 +32,7 @@ PY
 }
 
 scan_devices() {
+  command -v rfkill >/dev/null 2>&1 && rfkill unblock bluetooth >/dev/null 2>&1 || true
   bluetoothctl power on >/dev/null 2>&1 || true
   bluetoothctl scan on >/dev/null 2>&1 &
   local scan_pid=$!
@@ -40,10 +41,52 @@ scan_devices() {
   bluetoothctl scan off >/dev/null 2>&1 || true
 }
 
+notify() {
+  local title="$1" message="$2"
+
+  command -v notify-send >/dev/null 2>&1 && notify-send "$title" "$message" || true
+}
+
+is_powered_on() {
+  [[ "$((bluetoothctl show 2>/dev/null || true) | awk -F': ' '/Powered/ {print $2; exit}')" == "yes" ]]
+}
+
+set_power() {
+  local power="$1"
+
+  if [[ "$power" == "on" ]]; then
+    command -v rfkill >/dev/null 2>&1 && rfkill unblock bluetooth >/dev/null 2>&1 || true
+    sleep 0.5
+
+    for _ in {1..5}; do
+      if bluetoothctl power on >/dev/null 2>&1 || is_powered_on; then
+        exit 0
+      fi
+      sleep 0.5
+    done
+
+    notify "Bluetooth" "No pude prender Bluetooth. Revisá si hay bloqueo físico o permisos de rfkill."
+    exit 0
+  fi
+
+  bluetoothctl power off >/dev/null 2>&1 || true
+}
+
 menu() {
-  local rows selection mac connected action
+  local rows selection mac connected action powered power_label power_value
+
+  powered="$((bluetoothctl show 2>/dev/null || true) | awk -F': ' '/Powered/ {print $2; exit}')"
+
+  if [[ "$powered" == "yes" ]]; then
+    power_label="󰂲  turn bluetooth off"
+    power_value="off"
+  else
+    power_label="󰂯  turn bluetooth on"
+    power_value="on"
+  fi
 
   rows="$(
+    printf '%s\tpower\t%s\n' "$power_label" "$power_value"
     printf '󰐥  scan new devices\tscan\tscan\n'
     (bluetoothctl devices 2>/dev/null || true) | while read -r _ mac name; do
       [[ -z "${mac:-}" || -z "${name:-}" ]] && continue
@@ -61,6 +104,11 @@ menu() {
 
   action="$(printf '%s' "$rows" | awk -F'\t' -v label="$selection" '$1 == label {print $2; exit}')"
   mac="$(printf '%s' "$rows" | awk -F'\t' -v label="$selection" '$1 == label {print $3; exit}')"
+
+  if [[ "$action" == "power" ]]; then
+    set_power "$mac"
+    exit 0
+  fi
 
   if [[ "$action" == "scan" ]]; then
     scan_devices
@@ -80,5 +128,7 @@ menu() {
 case "${1:---status}" in
   --status) status ;;
   --menu) menu ;;
+  --power-on) set_power on ;;
+  --power-off) set_power off ;;
   *) status ;;
 esac

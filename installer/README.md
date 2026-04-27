@@ -15,7 +15,6 @@ The installer is a small modular Bash entrypoint for setting up this repo's dotf
 Current component ids:
 
 - `dotfiles`
-- `zsh`
 - `kitty`
 - `nerd-fonts`
 - `tmux`

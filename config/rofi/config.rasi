@@ -1,0 +1,23 @@
+configuration {
+  modi: "drun,run,window";
+  show-icons: true;
+  icon-theme: "Papirus-Light";
+  display-drun: "󰀻  Applications";
+  display-run: "  Run";
+  display-window: "󰖲  Windows";
+  drun-display-format: "{name}";
+  window-format: "{w} · {c}";
+  sidebar-mode: true;
+  matching: "fuzzy";
+  sort: true;
+  sorting-method: "fzf";
+  case-sensitive: false;
+  hover-select: true;
+  me-select-entry: "";
+  me-accept-entry: "MousePrimary";
+  kb-row-up: "Up";
+  kb-row-down: "Down";
+  kb-accept-entry: "Return,KP_Enter";
+}
+
+@theme "~/.config/rofi/launcher.rasi"

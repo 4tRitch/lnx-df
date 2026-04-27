@@ -1,0 +1,155 @@
+/**
+ * @name system24-light
+ * @description light gray system24 variant matching the Kitty light theme.
+ * @author refact0r, ritch
+ * @version 1.0.0
+ * @source https://github.com/refact0r/system24
+ */
+
+/* import theme modules */
+@import url('https://refact0r.github.io/system24/build/system24.css');
+
+body {
+    /* font, change to '' for default discord font */
+    --font: 'DM Mono';
+    --code-font: 'DM Mono';
+    font-weight: 300;
+    letter-spacing: -0.05ch;
+
+    /* sizes */
+    --gap: 12px;
+    --divider-thickness: 4px;
+    --border-thickness: 2px;
+    --border-hover-transition: 0.2s ease;
+
+    /* animation/transition options */
+    --animations: on;
+    --list-item-transition: 0.2s ease;
+    --dms-icon-svg-transition: 0.4s ease;
+
+    /* top bar options */
+    --top-bar-height: var(--gap);
+    --top-bar-button-position: titlebar;
+    --top-bar-title-position: off;
+    --subtle-top-bar-title: off;
+
+    /* window controls */
+    --custom-window-controls: off;
+    --window-control-size: 14px;
+
+    /* dms button options */
+    --custom-dms-icon: off;
+    --dms-icon-svg-url: url('');
+    --dms-icon-svg-size: 90%;
+    --dms-icon-color-before: var(--icon-subtle);
+    --dms-icon-color-after: var(--text-1);
+    --custom-dms-background: off;
+    --dms-background-image-url: url('');
+    --dms-background-image-size: cover;
+    --dms-background-color: linear-gradient(70deg, var(--bg-2), var(--text-4), var(--bg-1));
+
+    /* background image options */
+    --background-image: off;
+    --background-image-url: url('');
+
+    /* transparency/blur options */
+    --transparency-tweaks: off;
+    --remove-bg-layer: off;
+    --panel-blur: off;
+    --blur-amount: 12px;
+    --bg-floating: var(--bg-3);
+
+    /* other options */
+    --small-user-panel: on;
+
+    /* unrounding options */
+    --unrounding: on;
+
+    /* styling options */
+    --custom-spotify-bar: on;
+    --ascii-titles: on;
+    --ascii-loader: system24;
+
+    /* panel labels */
+    --panel-labels: on;
+    --label-color: var(--text-5);
+    --label-font-weight: 500;
+}
+
+/* color options */
+:root {
+    --colors: on;
+
+    /* Kitty-inspired light gray base */
+    --text-0: #eceff4;
+    --text-1: #171c26;
+    --text-2: #252b36;
+    --text-3: #2e3440;
+    --text-4: #4c566a;
+    --text-5: #687386;
+
+    --bg-1: #d8dce3;
+    --bg-2: #e1e5ec;
+    --bg-3: #e7eaf0;
+    --bg-4: #eceff4;
+    --hover: rgb(46 52 64 / 0.08);
+    --active: rgb(46 52 64 / 0.14);
+    --active-2: rgb(46 52 64 / 0.22);
+    --message-hover: var(--hover);
+
+    /* accent colors */
+    --accent-1: #252b36;
+    --accent-2: #2e3440;
+    --accent-3: #3d4451;
+    --accent-4: #4c566a;
+    --accent-5: #171c26;
+    --accent-new: var(--red-2);
+    --mention: linear-gradient(to right, rgb(95 127 168 / 0.16) 40%, transparent);
+    --mention-hover: linear-gradient(to right, rgb(95 127 168 / 0.22) 40%, transparent);
+    --reply: linear-gradient(to right, rgb(46 52 64 / 0.10) 40%, transparent);
+    --reply-hover: linear-gradient(to right, rgb(46 52 64 / 0.16) 40%, transparent);
+
+    /* status indicator colors */
+    --online: var(--green-2);
+    --dnd: var(--red-2);
+    --idle: var(--yellow-2);
+    --streaming: var(--purple-2);
+    --offline: var(--text-5);
+
+    /* border colors */
+    --border-light: rgb(46 52 64 / 0.08);
+    --border: rgb(46 52 64 / 0.14);
+    --border-hover: #2e3440;
+    --button-border: rgb(46 52 64 / 0.12);
+
+    /* base colors tuned for light backgrounds */
+    --red-1: #8f3f4d;
+    --red-2: #a94a5b;
+    --red-3: #b85b6a;
+    --red-4: #c76a78;
+    --red-5: #d77986;
+
+    --green-1: #3f6138;
+    --green-2: #486d40;
+    --green-3: #557d4d;
+    --green-4: #64905b;
+    --green-5: #76a36e;
+
+    --blue-1: #3f5f85;
+    --blue-2: #4f6f95;
+    --blue-3: #5f7fa8;
+    --blue-4: #6f90ba;
+    --blue-5: #82a2cc;
+
+    --yellow-1: #604a00;
+    --yellow-2: #6f5600;
+    --yellow-3: #7d6400;
+    --yellow-4: #8a6f45;
+    --yellow-5: #9a8052;
+
+    --purple-1: #684f75;
+    --purple-2: #7a5c88;
+    --purple-3: #8b6b9a;
+    --purple-4: #9d7cad;
+    --purple-5: #b08ec0;
+}

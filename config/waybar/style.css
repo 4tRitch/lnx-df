@@ -1,92 +1,110 @@
 * {
-  font-family: "CaskaydiaCove Nerd Font", "JetBrainsMono Nerd Font", monospace;
-  font-size: 13px;
-  font-weight: 600;
+  font-family: "DM Mono", "CaskaydiaCove Nerd Font", "JetBrainsMono Nerd Font", monospace;
+  font-size: 11px;
+  font-weight: 700;
   min-height: 0;
 }
 
 window#waybar {
-  background: rgba(8, 8, 8, 0.94);
-  color: #f5f5f5;
-  border-bottom: 1px solid #707070;
+  background: transparent;
+  color: #e8e8e8;
 }
 
 tooltip {
-  background: #101010;
-  color: #f5f5f5;
-  border: 1px solid #8a8a8a;
-  border-radius: 3px;
+  background: rgba(18, 18, 24, 0.94);
+  color: #eeeeee;
+  border: 1px solid rgba(230, 230, 230, 0.45);
+  border-radius: 9px;
 }
 
 #workspaces {
-  margin: 4px 0 4px 8px;
-  padding: 2px 4px;
-  background: #141414;
-  border: 1px solid #8a8a8a;
-  border-radius: 3px;
+  margin: 4px 0;
+  padding: 3px 6px;
+  background: rgba(24, 24, 32, 0.86);
+  border: 1px solid rgba(230, 230, 230, 0.32);
+  border-radius: 999px;
 }
 
 #workspaces button {
-  min-width: 30px;
-  margin: 0 2px;
+  min-width: 18px;
+  margin: 0 1px;
   padding: 0 8px;
-  color: #b8b8b8;
-  background: #202020;
-  border: 1px solid #4a4a4a;
-  border-radius: 2px;
+  color: #9a9a9a;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
 }
 
 #workspaces button.visible {
-  color: #ffffff;
-  border-color: #cfcfcf;
+  color: #dadada;
 }
 
 #workspaces button.active {
-  color: #080808;
-  background: #f5f5f5;
-  border-color: #ffffff;
+  color: #111111;
+  background: #dcdcdc;
 }
 
 #workspaces button.urgent {
-  color: #080808;
-  background: #b8b8b8;
-  border-color: #ffffff;
+  color: #111111;
+  background: #f0f0f0;
 }
 
 #workspaces button:hover {
   color: #ffffff;
-  background: #303030;
-  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
+#window,
 #tray,
+#network,
 #custom-bluetooth,
 #pulseaudio,
-#network,
 #clock {
   margin: 4px 0;
-  padding: 0 10px;
-  background: #141414;
-  border: 1px solid #5f5f5f;
-  border-radius: 3px;
+  padding: 0 11px;
+  color: #e8e8e8;
+  background: rgba(24, 24, 32, 0.86);
+  border: 1px solid rgba(230, 230, 230, 0.32);
+  border-radius: 999px;
+}
+
+#window {
+  margin-left: 6px;
+  min-width: 0;
+  padding: 0 11px;
+  color: #f2f2f2;
+}
+
+window#waybar.empty #window {
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
 }
 
 #clock {
-  color: #ffffff;
-  border-color: #8a8a8a;
+  margin-right: 6px;
+  color: #f2f2f2;
+}
+
+#tray {
+  padding: 0 10px;
+}
+
+#network,
+#custom-bluetooth {
+  min-width: 42px;
+  padding: 0 10px;
 }
 
 #custom-bluetooth.connected,
+#network,
 #pulseaudio {
-  color: #ffffff;
+  color: #eeeeee;
 }
 
 #custom-bluetooth.off,
-#pulseaudio.muted,
-#network.disconnected {
-  color: #9a9a9a;
-}
-
-#network {
-  margin-right: 8px;
+#network.disconnected,
+#pulseaudio.muted {
+  color: #8b8b8b;
 }

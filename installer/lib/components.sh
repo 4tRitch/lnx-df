@@ -2,7 +2,6 @@
 
 COMPONENT_IDS=(
   dotfiles
-  zsh
   kitty
   nerd-fonts
   tmux
@@ -32,9 +31,9 @@ PRESET_IDS=(
   custom
 )
 
-BASIC_PRESET_COMPONENTS=(dotfiles zsh kitty nerd-fonts tmux nvim python nodejs pnpm)
-DEV_PRESET_COMPONENTS=(dotfiles zsh kitty nerd-fonts tmux nvim gcc cmake python nodejs pnpm rust go dotnet tauri opencode gentle-ai codex claude-code qwen-cli)
-GAMEDEV_PRESET_COMPONENTS=(dotfiles zsh kitty nerd-fonts tmux nvim gcc cmake python nodejs pnpm rust go dotnet tauri godot)
+BASIC_PRESET_COMPONENTS=(dotfiles kitty nerd-fonts tmux nvim python nodejs pnpm)
+DEV_PRESET_COMPONENTS=(dotfiles kitty nerd-fonts tmux nvim gcc cmake python nodejs pnpm rust go dotnet tauri opencode gentle-ai codex claude-code qwen-cli)
+GAMEDEV_PRESET_COMPONENTS=(dotfiles kitty nerd-fonts tmux nvim gcc cmake python nodejs pnpm rust go dotnet tauri godot)
 FULL_PRESET_COMPONENTS=("${COMPONENT_IDS[@]}")
 
 PYTHON_SELECTION=()
@@ -580,12 +579,14 @@ uninstall_component() {
 }
 
 install_dotfiles() {
-  ensure_symlink "${CONFIG_ROOT}/.zshrc" "${HOME}/.zshrc"
-  ensure_symlink "${CONFIG_ROOT}/zsh" "${HOME}/.config/zsh"
+  remove_repo_symlink "${HOME}/.zshrc"
+  ensure_symlink "${CONFIG_ROOT}/autostart" "${HOME}/.config/autostart"
+  remove_repo_symlink "${HOME}/.config/zsh"
   ensure_symlink "${CONFIG_ROOT}/nvim" "${HOME}/.config/nvim"
 
   remove_repo_symlink "${HOME}/.config/kitty"
   ensure_symlink "${CONFIG_ROOT}/kitty/kitty.conf" "${HOME}/.config/kitty/kitty.conf"
+  ensure_symlink "${CONFIG_ROOT}/kitty/themes" "${HOME}/.config/kitty/themes"
 
   remove_repo_symlink "${HOME}/.config/tmux"
   ensure_symlink "${CONFIG_ROOT}/tmux/tmux.conf" "${HOME}/.config/tmux/tmux.conf"
@@ -594,9 +595,11 @@ install_dotfiles() {
 
 uninstall_dotfiles() {
   remove_repo_symlink "${INSTALL_USER_HOME}/.zshrc"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/autostart"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/zsh"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/nvim"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty/kitty.conf"
+  remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty/themes"
   remove_repo_symlink "${INSTALL_USER_HOME}/.tmux.conf"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/tmux/tmux.conf"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty"
@@ -996,10 +999,10 @@ install_qwen_cli() {
 check_dotfiles() {
   local failures=0
 
-  check_symlink_target "${HOME}/.zshrc" "${CONFIG_ROOT}/.zshrc" || failures=$((failures + 1))
-  check_symlink_target "${HOME}/.config/zsh" "${CONFIG_ROOT}/zsh" || failures=$((failures + 1))
+  check_symlink_target "${HOME}/.config/autostart" "${CONFIG_ROOT}/autostart" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/nvim" "${CONFIG_ROOT}/nvim" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/kitty/kitty.conf" "${CONFIG_ROOT}/kitty/kitty.conf" || failures=$((failures + 1))
+  check_symlink_target "${HOME}/.config/kitty/themes" "${CONFIG_ROOT}/kitty/themes" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
 

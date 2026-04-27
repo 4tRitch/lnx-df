@@ -1,0 +1,132 @@
+* {
+  bg: rgba(14, 16, 16, 58%);
+  bg-panel: rgba(18, 20, 20, 44%);
+  bg-hover: rgba(235, 235, 235, 16%);
+  bg-active: rgba(235, 235, 235, 22%);
+  fg: #d4d7d7;
+  fg-muted: #828787;
+  fg-strong: #f0f0f0;
+  border: rgba(230, 230, 230, 30%);
+
+  font: "DM Mono 8";
+}
+
+window {
+  transparency: "real";
+  location: center;
+  anchor: center;
+  width: 37%;
+  border: 1px;
+  border-color: @border;
+  border-radius: 2px;
+  background-color: @bg;
+}
+
+mainbox {
+  spacing: 4px;
+  padding: 7px;
+  background-color: transparent;
+  children: [ inputbar, mode-switcher, listview ];
+}
+
+inputbar {
+  expand: false;
+  orientation: horizontal;
+  spacing: 6px;
+  padding: 0 0 2px 0;
+  background-color: transparent;
+  children: [ prompt, entry ];
+}
+
+prompt {
+  expand: false;
+  width: 120px;
+  padding: 3px 6px;
+  background-color: transparent;
+  text-color: @fg-strong;
+}
+
+entry {
+  expand: true;
+  padding: 3px 6px;
+  placeholder: "Search";
+  placeholder-color: @fg-muted;
+  background-color: @bg-panel;
+  text-color: @fg;
+  border: 1px;
+  border-color: rgba(230, 230, 230, 16%);
+  border-radius: 2px;
+}
+
+mode-switcher {
+  expand: false;
+  spacing: 3px;
+  padding: 0 0 2px 0;
+  background-color: transparent;
+}
+
+button {
+  padding: 2px 7px;
+  background-color: @bg-panel;
+  text-color: @fg-muted;
+  border: 1px;
+  border-color: rgba(230, 230, 230, 14%);
+  border-radius: 2px;
+}
+
+button selected {
+  background-color: @bg-active;
+  text-color: @fg-strong;
+  border-color: @border;
+}
+
+listview {
+  columns: 1;
+  lines: 11;
+  cycle: true;
+  dynamic: true;
+  scrollbar: false;
+  fixed-height: false;
+  spacing: 2px;
+  background-color: transparent;
+}
+
+element {
+  orientation: horizontal;
+  spacing: 7px;
+  padding: 3px 6px;
+  background-color: transparent;
+  text-color: @fg;
+  border-radius: 2px;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent {
+  background-color: @bg-hover;
+  text-color: @fg-strong;
+}
+
+element-icon {
+  size: 15px;
+  background-color: transparent;
+}
+
+element-text {
+  expand: true;
+  background-color: transparent;
+  text-color: inherit;
+  vertical-align: 0.5;
+}
+
+message {
+  padding: 5px;
+  background-color: @bg-panel;
+  border: 1px;
+  border-color: @border;
+}
+
+textbox {
+  text-color: @fg;
+  background-color: transparent;
+}

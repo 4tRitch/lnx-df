@@ -5,7 +5,7 @@
     "themeLinks": [],
     "eagerPatches": false,
     "enabledThemes": [
-        "system24.theme.css"
+        "system24-light.theme.css"
     ],
     "enableReactDevtools": false,
     "frameless": false,
@@ -572,6 +572,6 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1777217901698
+        "settingsSyncVersion": 1777242094154
     }
 }

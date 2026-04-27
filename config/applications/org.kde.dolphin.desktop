@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Files
+GenericName=File Manager
+Comment=Browse files and folders
+Exec=env QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=Fusion dolphin %u
+Icon=org.kde.dolphin
+Type=Application
+Categories=Qt;KDE;System;FileTools;FileManager;
+MimeType=inode/directory;
+StartupNotify=true
+Terminal=false
