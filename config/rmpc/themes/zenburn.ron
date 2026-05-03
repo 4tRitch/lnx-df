@@ -65,7 +65,7 @@
         inactive_style: (fg: "#7a7a7a"),
     ),
     lyrics: (
-        timestamp: true,
+        timestamp: false,
     ),
     song_table_format: [
         (
