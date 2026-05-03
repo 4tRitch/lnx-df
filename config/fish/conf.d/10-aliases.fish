@@ -1,7 +1,6 @@
 status is-interactive; or return
 
 alias g 'git'
-alias ls 'eza'
 alias tre 'eza -T'
 alias .. 'cd ..'
 alias opc 'opencode'
@@ -16,6 +15,7 @@ alias fc 'cp -rf'
 alias fm 'mv -rf'
 alias bat 'batcat'
 alias gl 'pwd'
+alias ls 'll'
 
 if test -d $DFL
   function df --description 'cd into dotfiles root'
