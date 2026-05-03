@@ -5,16 +5,16 @@
     format_tag_separator: " • ",
     browser_column_widths: [20, 38, 42],
     background_color: "#191919",
-    text_color: "#7a7a7a",
+    text_color: "#dcdccc",
     header_background_color: "#191919",
     modal_background_color: "#3f3f3f",
     modal_backdrop: true,
     preview_label_style: (fg: "#dfaf8f", modifiers: "Bold"),
     preview_metadata_group_style: (fg: "#f0dfaf", modifiers: "Bold"),
-    highlighted_item_style: (fg: "#cacaca", modifiers: "Bold"),
-    current_item_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
+    highlighted_item_style: (fg: "#93e0e3", modifiers: "Bold"),
+    current_item_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
     borders_style: (fg: "#6f6f6f"),
-    highlight_border_style: (fg: "#cacaca"),
+    highlight_border_style: (fg: "#8cd0d3"),
     symbols: (
         song: "",
         dir: "",
@@ -24,18 +24,18 @@
         song_style: (fg: "#7f9f7f"),
         dir_style: (fg: "#dca3a3"),
         playlist_style: (fg: "#d0bf8f"),
-        marker_style: (fg: "#cacaca", modifiers: "Bold"),
-        song_highlighted_style: (fg: "#cacaca", modifiers: "Bold"),
-        dir_highlighted_style: (fg: "#cacaca", modifiers: "Bold"),
-        playlist_highlighted_style: (fg: "#cacaca", modifiers: "Bold"),
-        marker_highlighted_style: (fg: "#cacaca", modifiers: "Bold"),
-        song_current_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
-        dir_current_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
-        playlist_current_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
-        marker_current_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
+        marker_style: (fg: "#8cd0d3", modifiers: "Bold"),
+        song_highlighted_style: (fg: "#93e0e3", modifiers: "Bold"),
+        dir_highlighted_style: (fg: "#93e0e3", modifiers: "Bold"),
+        playlist_highlighted_style: (fg: "#93e0e3", modifiers: "Bold"),
+        marker_highlighted_style: (fg: "#93e0e3", modifiers: "Bold"),
+        song_current_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
+        dir_current_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
+        playlist_current_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
+        marker_current_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
     ),
     level_styles: (
-        info: (fg: "#cacaca", bg: "#2b2b2b"),
+        info: (fg: "#8cd0d3", bg: "#2b2b2b"),
         warn: (fg: "#f0dfaf", bg: "#2b2b2b"),
         error: (fg: "#cc9393", bg: "#2b2b2b"),
         debug: (fg: "#7f9f7f", bg: "#2b2b2b"),
@@ -58,42 +58,42 @@
         symbols: ["│", "█", "▲", "▼"],
         track_style: (fg: "#4f4f4f"),
         ends_style: (fg: "#6f6f6f"),
-        thumb_style: (fg: "#cacaca"),
+        thumb_style: (fg: "#8cd0d3"),
     ),
     tab_bar: (
-        active_style: (fg: "#191919", bg: "#cacaca", modifiers: "Bold"),
-        inactive_style: (fg: "#7a7a7a"),
+        active_style: (fg: "#2b2b2b", bg: "#8cd0d3", modifiers: "Bold"),
+        inactive_style: (fg: "#dcdccc"),
     ),
     lyrics: (
         timestamp: true,
     ),
     song_table_format: [
         (
-            prop: (kind: Property(Artist), style: (fg: "#6f6f6f"),
-                default: (kind: Text("Unknown"), style: (fg: "#a89f7a"))
+            prop: (kind: Property(Artist),
+                default: (kind: Text("Unknown"), style: (fg: "#7f9f7f"))
             ),
-            label_prop: (kind: Text("Artist"), style: (fg: "#cacaca")),
+            label_prop: (kind: Text("Artist"), style: (fg: "#dcdccc")),
             width: "20%",
         ),
         (
-            prop: (kind: Property(Title), style: (fg: "#6f6f6f"),
-                default: (kind: Text("Unknown"), style: (fg: "#a89f7a"))
+            prop: (kind: Property(Title),
+                default: (kind: Text("Unknown"), style: (fg: "#f0dfaf"))
             ),
-            label_prop: (kind: Text("Title"), style: (fg: "#cacaca")),
+            label_prop: (kind: Text("Title"), style: (fg: "#dcdccc")),
             width: "35%",
         ),
         (
-            prop: (kind: Property(Album), style: (fg: "#6f6f6f"),
-                default: (kind: Text("Unknown Album"), style: (fg: "#a89f7a"))
+            prop: (kind: Property(Album), style: (fg: "#dcdccc"),
+                default: (kind: Text("Unknown Album"), style: (fg: "#dcdccc"))
             ),
-            label_prop: (kind: Text("Album"), style: (fg: "#cacaca")),
+            label_prop: (kind: Text("Album"), style: (fg: "#dcdccc")),
             width: "30%",
         ),
         (
-            prop: (kind: Property(Duration), style: (fg: "#6f6f6f"),
+            prop: (kind: Property(Duration),
                 default: (kind: Text("-"), style: (fg: "#6f6f6f"))
             ),
-            label_prop: (kind: Text("Len"), style: (fg: "#cacaca")),
+            label_prop: (kind: Text("Len"), style: (fg: "#dcdccc")),
             width: "15%",
             alignment: Right,
         ),
@@ -139,7 +139,7 @@
                               (kind: Property(Status(Duration)), style: (fg: "#dcdccc")),
                               (kind: Group([
                                 (kind: Text(" ("), style: (fg: "#6f6f6f")),
-                                (kind: Property(Status(Bitrate)), style: (fg: "#cacaca")),
+                                (kind: Property(Status(Bitrate)), style: (fg: "#8cd0d3")),
                                 (kind: Text(" kbps)"), style: (fg: "#6f6f6f")),
                               ])),
                             (kind: Text(" "))],
@@ -152,8 +152,8 @@
                             border_symbols: Plain,
                             border_title: [
                                 (kind: Text(" ")),
-                                (kind: Property(Status(Volume)), style: (fg: "#cacaca", modifiers: "Bold")),
-                                (kind: Text("%"), style: (fg: "#cacaca", modifiers: "Bold")),
+                                (kind: Property(Status(Volume)), style: (fg: "#8cd0d3", modifiers: "Bold")),
+                                (kind: Text("%"), style: (fg: "#8cd0d3", modifiers: "Bold")),
                                 (kind: Text(" "))
                             ],
                             border_title_alignment: Right,
@@ -189,8 +189,8 @@
                 (size: "8", pane: Pane(Property(content: [(kind: Text("Volume:"), style: (fg: "#dcdccc"))]))),
                 (size: "1", pane: Pane(Property(content: [(kind: Text(" "))]))),
                 (size: "100%", pane: Pane(Volume(kind: Slider(symbols: (filled: "─", thumb: "●", track: "─"))))),
-                (size: "4", pane: Pane(Property(content: [(kind: Property(Status(Volume)), style: (fg: "#cacaca", modifiers: "Bold"))], align: Right))),
-                (size: "2", pane: Pane(Property(content: [(kind: Text("%"), style: (fg: "#cacaca", modifiers: "Bold"))]))),
+                (size: "4", pane: Pane(Property(content: [(kind: Property(Status(Volume)), style: (fg: "#8cd0d3", modifiers: "Bold"))], align: Right))),
+                (size: "2", pane: Pane(Property(content: [(kind: Text("%"), style: (fg: "#8cd0d3", modifiers: "Bold"))]))),
             ]
         ),
         "elapsed_and_bitrate": Pane(Property(
@@ -200,7 +200,7 @@
                 (kind: Property(Status(Duration)), style: (fg: "#dcdccc")),
                 (kind: Group([
                     (kind: Text(" ("), style: (fg: "#6f6f6f")),
-                    (kind: Property(Status(Bitrate)), style: (fg: "#cacaca")),
+                    (kind: Property(Status(Bitrate)), style: (fg: "#8cd0d3")),
                     (kind: Text(" kbps)"), style: (fg: "#6f6f6f")),
                 ])),
             ],
@@ -231,7 +231,7 @@
                 ),
                 (
                     size: "100%",
-                    pane: Pane(Property(content: [(kind: Property(Status(InputBuffer())), style: (fg: "#cacaca"), align: Left)]))
+                    pane: Pane(Property(content: [(kind: Property(Status(InputBuffer())), style: (fg: "#8cd0d3"), align: Left)]))
                 ),
                 (
                     size: "6",

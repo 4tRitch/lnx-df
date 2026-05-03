@@ -3,6 +3,32 @@
 #![enable(unwrap_variant_newtypes)]
 (
     theme: "zenburn",
+    keybinds: (
+        global: {
+            "1": SwitchToTab("Queue"),
+            "2": SwitchToTab("Directories"),
+            "3": SwitchToTab("Albums"),
+            "4": SwitchToTab("Search"),
+        },
+    ),
+    cava: (
+        framerate: 60,
+        autosens: true,
+        sensitivity: 100,
+        input: (
+            method: Fifo,
+            source: "/tmp/mpd.fifo",
+            sample_rate: 44100,
+            channels: 2,
+            sample_bits: 16,
+        ),
+        smoothing: (
+            noise_reduction: 77,
+            monstercat: false,
+            waves: false,
+        ),
+        eq: [],
+    ),
     tabs: [
         (
             name: "Queue",
@@ -77,16 +103,6 @@
             )
         ),
         (
-            name: "Artists",
-            borders: "ALL",
-            border_symbols: Plain,
-            pane: Split(
-                size: "100%",
-                direction: Vertical,
-                panes: [(pane: Pane(Artists), size: "100%", borders: "ALL", border_symbols: Plain)],
-            )
-        ),
-        (
             name: "Albums",
             borders: "ALL",
             border_symbols: Plain,
@@ -94,16 +110,6 @@
                 size: "100%",
                 direction: Vertical,
                 panes: [(pane: Pane(Albums), size: "100%", borders: "ALL", border_symbols: Plain)],
-            )
-        ),
-        (
-            name: "Playlists",
-            borders: "ALL",
-            border_symbols: Plain,
-            pane: Split(
-                size: "100%",
-                direction: Vertical,
-                panes: [(pane: Pane(Playlists), size: "100%", borders: "ALL", border_symbols: Plain)],
             )
         ),
         (
