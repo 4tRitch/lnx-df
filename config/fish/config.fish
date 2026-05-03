@@ -2,6 +2,8 @@ if status is-interactive
   # env STEAM_FORCE_DESKTOPUI_SCALING=1 steam
   set -Ux MOZ_ENABLE_WAYLAND 1
   set -Ux XDG_DATA_DIRS /var/lib/flatpak/exports/share $HOME/.local/share/flatpak/exports/share $XDG_DATA_DIRS
+set -Ux QT_QPA_PLATFORMTHEME qt6ct
+set -Ux QT_STYLE_OVERRIDE breeze
 
   if command -q zoxide
     zoxide init fish | source

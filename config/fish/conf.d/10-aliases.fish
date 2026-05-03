@@ -11,7 +11,6 @@ alias mk 'mkdir'
 alias jj 'cd ~'
 alias vi 'nvim'
 alias ee 'exit'
-alias xx 'explorer.exe .'
 alias fr 'rm -rf'
 alias fc 'cp -rf'
 alias fm 'mv -rf'
@@ -33,5 +32,18 @@ end
 if test -d $DEVD
   function gg --description 'cd into development directory'
     cd $DEVD
+  end
+end
+
+function xx --description 'open current directory in default file explorer'
+  if command -sq xdg-open
+    xdg-open . >/dev/null 2>&1 &
+  else if command -sq open
+    open . >/dev/null 2>&1 &
+  else if command -sq explorer.exe
+    explorer.exe . >/dev/null 2>&1 &
+  else
+    printf 'No default file opener found\n' >&2
+    return 1
   end
 end

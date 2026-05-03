@@ -24,10 +24,66 @@ wifi_device() {
     | awk -F: '$2 == "wifi" {print $1; exit}'
 }
 
+wifi_state_file() {
+  printf '%s\n' "${XDG_RUNTIME_DIR:-/tmp}/waybar-wifi-soft-off"
+}
+
+mark_wifi_soft_off() {
+  : > "$(wifi_state_file)"
+}
+
+clear_wifi_soft_off() {
+  rm -f "$(wifi_state_file)"
+}
+
+wifi_is_soft_off() {
+  [[ -f "$(wifi_state_file)" ]]
+}
+
+wifi_radio_state() {
+  nmcli radio wifi 2>/dev/null || true
+}
+
+sync_wifi_soft_off_state() {
+  local radio_state device_state
+
+  radio_state="$(wifi_radio_state)"
+  device_state="$(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | awk -F: '$2 == "wifi" {print $3; exit}')"
+
+  if [[ "$radio_state" != "enabled" || "$device_state" == "connected" ]]; then
+    clear_wifi_soft_off
+  fi
+}
+
+turn_wifi_off() {
+  local device
+
+  device="$(wifi_device)"
+  [[ -z "$device" ]] && return 0
+
+  nmcli device down "$device" >/dev/null 2>&1 || true
+  mark_wifi_soft_off
+}
+
+turn_wifi_on() {
+  local device
+
+  device="$(wifi_device)"
+
+  clear_wifi_soft_off
+
+  if [[ -n "$device" ]]; then
+    nmcli device up "$device" >/dev/null 2>&1 || true
+  fi
+
+  nmcli device wifi rescan >/dev/null 2>&1 || true
+}
+
 disconnect_wifi() {
   local device
 
   device="$(wifi_device)"
+  clear_wifi_soft_off
   [[ -n "$device" ]] && nmcli device disconnect "$device" >/dev/null 2>&1 || true
 }
 
@@ -35,6 +91,7 @@ connect_wifi() {
   local ssid="$1" password
 
   if nmcli device wifi connect "$ssid" >/dev/null 2>&1; then
+    clear_wifi_soft_off
     exit 0
   fi
 
@@ -43,6 +100,8 @@ connect_wifi() {
 
   if ! nmcli device wifi connect "$ssid" password "$password" >/dev/null 2>&1; then
     notify "WiFi" "No pude conectar a $ssid"
+  else
+    clear_wifi_soft_off
   fi
 }
 
@@ -104,14 +163,15 @@ menu() {
 
   local rows selection action value wifi_state power_label power_value
 
-  wifi_state="$(nmcli radio wifi 2>/dev/null || true)"
+  sync_wifi_soft_off_state
+  wifi_state="$(wifi_radio_state)"
 
-  if [[ "$wifi_state" == "enabled" ]]; then
-    power_label="󰤭  turn wifi off"
-    power_value="off"
-  else
+  if [[ "$wifi_state" != "enabled" ]] || wifi_is_soft_off; then
     power_label="󰤨  turn wifi on"
     power_value="on"
+  else
+    power_label="󰤭  turn wifi off"
+    power_value="off"
   fi
 
   rows="$({
@@ -128,7 +188,11 @@ menu() {
 
   case "$action" in
     power)
-      nmcli radio wifi "$value"
+      if [[ "$value" == "off" ]]; then
+        turn_wifi_off
+      else
+        turn_wifi_on
+      fi
       ;;
     scan)
       nmcli device wifi rescan >/dev/null 2>&1 || true

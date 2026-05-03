@@ -57,9 +57,11 @@ tooltip {
 
 #window,
 #tray,
+#custom-keyboard,
 #network,
 #custom-bluetooth,
 #pulseaudio,
+#custom-power,
 #clock {
   margin: 4px 0;
   padding: 0 11px;
@@ -92,15 +94,22 @@ window#waybar.empty #window {
 }
 
 #network,
-#custom-bluetooth {
+#custom-bluetooth,
+#custom-keyboard,
+#custom-power {
   min-width: 42px;
   padding: 0 10px;
 }
 
 #custom-bluetooth.connected,
+#custom-keyboard,
 #network,
 #pulseaudio {
   color: #eeeeee;
+}
+
+#custom-keyboard.jp {
+  color: #f2df8c;
 }
 
 #custom-bluetooth.off,

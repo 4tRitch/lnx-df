@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+device_battery() {
+  local mac="$1"
+
+  (bluetoothctl info "$mac" 2>/dev/null || true) | python3 -c '
+import re
+import sys
+
+text = sys.stdin.read()
+patterns = [
+    r"Battery Percentage:\s.*?\((\d+)\)",
+    r"Battery Percentage:\s*(\d+)",
+    r"Battery:\s*(\d+)%",
+]
+
+for pattern in patterns:
+    match = re.search(pattern, text)
+    if match:
+        print(match.group(1))
+        raise SystemExit(0)
+'
+}
+
 status() {
   local powered connected_count connected_names text tooltip class
 
@@ -11,7 +33,17 @@ status() {
     return
   fi
 
-  connected_names="$(bluetoothctl devices Connected 2>/dev/null | sed 's/^Device [^ ]* //' || true)"
+  connected_names="$(
+    (bluetoothctl devices Connected 2>/dev/null || true) | while read -r _ mac name; do
+      [[ -z "${mac:-}" || -z "${name:-}" ]] && continue
+      battery="$(device_battery "$mac")"
+      if [[ -n "$battery" ]]; then
+        printf '%s (%s%%)\n' "$name" "$battery"
+      else
+        printf '%s\n' "$name"
+      fi
+    done
+  )"
   connected_count="$(printf '%s\n' "$connected_names" | sed '/^$/d' | wc -l)"
 
   text="[󰂯 ${connected_count}]"
@@ -20,7 +52,7 @@ status() {
 
   if [[ "$connected_count" -gt 0 ]]; then
     class="connected"
-    tooltip="Bluetooth connected:\n${connected_names}"
+    tooltip="$(printf 'Bluetooth connected:\n%s' "$connected_names")"
   fi
 
   python3 - "$text" "$tooltip" "$class" <<'PY'
@@ -73,7 +105,7 @@ set_power() {
 }
 
 menu() {
-  local rows selection mac connected action powered power_label power_value
+  local rows selection mac connected action powered power_label power_value battery label
 
   powered="$((bluetoothctl show 2>/dev/null || true) | awk -F': ' '/Powered/ {print $2; exit}')"
 
@@ -91,10 +123,18 @@ menu() {
     (bluetoothctl devices 2>/dev/null || true) | while read -r _ mac name; do
       [[ -z "${mac:-}" || -z "${name:-}" ]] && continue
       connected="$((bluetoothctl info "$mac" 2>/dev/null || true) | awk -F': ' '/Connected/ {print $2; exit}')"
+      battery="$(device_battery "$mac")"
+      label="$name"
       if [[ "$connected" == "yes" ]]; then
-        printf '󰂱  %s  · connected\tdevice\t%s\n' "$name" "$mac"
+        label="$label  · connected"
+      fi
+      if [[ -n "$battery" ]]; then
+        label="$label  · ${battery}%"
+      fi
+      if [[ "$connected" == "yes" ]]; then
+        printf '󰂱  %s\tdevice\t%s\n' "$label" "$mac"
       else
-        printf '󰂯  %s\tdevice\t%s\n' "$name" "$mac"
+        printf '󰂯  %s\tdevice\t%s\n' "$label" "$mac"
       fi
     done
   )"

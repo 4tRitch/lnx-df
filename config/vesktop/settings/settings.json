@@ -1,12 +1,10 @@
 {
     "autoUpdate": true,
     "autoUpdateNotification": true,
-    "useQuickCss": true,
+    "useQuickCss": false,
     "themeLinks": [],
     "eagerPatches": false,
-    "enabledThemes": [
-        "system24-light.theme.css"
-    ],
+    "enabledThemes": [],
     "enableReactDevtools": false,
     "frameless": false,
     "transparent": false,
@@ -520,10 +518,10 @@
             "enabled": true
         },
         "WebKeybinds": {
-            "enabled": true
+            "enabled": false
         },
         "WebScreenShareFixes": {
-            "enabled": true
+            "enabled": false
         },
         "WhoReacted": {
             "enabled": false
@@ -572,6 +570,6 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1777242094154
+        "settingsSyncVersion": 1777263487872
     }
 }
