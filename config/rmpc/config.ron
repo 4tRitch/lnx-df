@@ -3,6 +3,7 @@
 #![enable(unwrap_variant_newtypes)]
 (
     theme: "zenburn",
+    lyrics_dir: "/home/ritch/Music",
     keybinds: (
         global: {
             "1": SwitchToTab("Queue"),
