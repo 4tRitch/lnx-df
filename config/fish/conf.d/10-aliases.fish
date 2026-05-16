@@ -13,9 +13,9 @@ alias ee 'exit'
 alias fr 'rm -rf'
 alias fc 'cp -rf'
 alias fm 'mv -rf'
-alias bat 'batcat'
 alias gl 'pwd'
 alias ls 'll'
+alias dd 'shutdown now'
 
 if test -d $DFL
   function df --description 'cd into dotfiles root'

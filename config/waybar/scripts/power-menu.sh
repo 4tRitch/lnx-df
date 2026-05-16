@@ -2,13 +2,14 @@
 set -euo pipefail
 
 status() {
-  python3 -c 'import json; print(json.dumps({"text":"⏻","tooltip":"Power menu\nClick: shutdown or reboot","class":"power"}))'
+  python3 -c 'import json; print(json.dumps({"text":"⏻","tooltip":"Power menu\nClick: logout, shutdown or reboot","class":"power"}))'
 }
 
 menu() {
   local rows selection action
 
   rows="$(
+    printf '󰍃  logout\tlogout\n'
     printf '󰜉  reboot\treboot\n'
     printf '  shutdown\tshutdown\n'
   )"
@@ -19,6 +20,7 @@ menu() {
   action="$(printf '%s' "$rows" | awk -F'\t' -v label="$selection" '$1 == label {print $2; exit}')"
 
   case "$action" in
+    logout) hyprctl dispatch exit ;;
     reboot) systemctl reboot ;;
     shutdown) systemctl poweroff ;;
   esac

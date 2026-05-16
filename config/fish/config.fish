@@ -27,3 +27,17 @@ end
 if test -d $HOME/.dotnet
   fish_add_path --path $HOME/.dotnet $HOME/.dotnet/tools
 end
+
+# pnpm
+set -gx PNPM_HOME "/home/ritch/.local/share/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+  set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end
+
+# bun
+set --export BUN_INSTALL "$HOME/.bun"
+set --export PATH $BUN_INSTALL/bin $PATH
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+set -x PATH $PATH /home/ritch/.local/share/npm-global/lib/node_modules
+set -x PATH $PATH /home/ritch/.local/share/pnpm/bin

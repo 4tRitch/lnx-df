@@ -88,7 +88,7 @@ status() {
     class='jp'
   fi
 
-  tooltip="$(printf 'Keyboard: %s\nPhysical layout: %s\nIME: %s\nClick: choose mode\nRight/Middle click: toggle IME\nDefault: English International' "$text" "$keymap" "$ime")"
+  tooltip="$(printf 'Keyboard: %s\nPhysical layout: %s\nIME: %s\nClick: choose mode\nRight/Middle click: toggle IME\nDefault: English AltGr International' "$text" "$keymap" "$ime")"
 
   python3 - "$text" "$tooltip" "$class" <<'PY'
 import json
@@ -125,10 +125,10 @@ menu() {
 
   rows="$(
     if [[ "$mode" == 'en' ]]; then
-      printf '⌨  * English International\ten\n'
+      printf '⌨  * English AltGr International\ten\n'
       printf 'あ  Japanese IME\tja\n'
     else
-      printf '⌨  English International\ten\n'
+      printf '⌨  English AltGr International\ten\n'
       printf 'あ  * Japanese IME\tja\n'
     fi
     if [[ "$ime" != 'missing' ]]; then
