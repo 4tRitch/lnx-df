@@ -15,14 +15,14 @@
         "qwen3.5-4b": {
           "name": "qwen3.5-4b_q8",
           "limit": {
-            "context": 32768,
+            "context": 52768,
             "output": 4096
           }
         },
         "qwen3.5-9b-vlm": {
           "name": "qwen3.5-9b-vlm",
           "limit": {
-            "context": 32768,
+            "context": 52768,
             "output": 4096
           }
         }
@@ -31,20 +31,6 @@
   },
 
   "mcp": {
-    "blender": {
-      "type": "local",
-      "command": [
-        "uvx",
-        "blender-mcp"
-      ],
-      "enabled": true,
-      "timeout": 30000,
-      "environment": {
-        "BLENDER_HOST": "localhost",
-        "BLENDER_PORT": "9876",
-        "DISABLE_TELEMETRY": "true"
-      }
-    },
     "engram": {
       "command": [
         "/home/linuxbrew/.linuxbrew/Cellar/engram/1.15.13/bin/engram",
