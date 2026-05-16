@@ -677,10 +677,12 @@ install_nerd_fonts() {
 install_tmux() {
   if command_exists tmux; then
     log "tmux already installed"
-    return 0
+  else
+    install_package_key tmux || return 1
   fi
 
-  install_package_key tmux
+  install_tmux_plugin_manager || return 1
+  install_tmux_plugins
 }
 
 install_nvim() {
@@ -1014,7 +1016,78 @@ check_tmux() {
   check_command_component tmux Tmux || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
+
+  if [[ -x ${HOME}/.tmux/plugins/tpm/tpm ]]; then
+    log "check passed: Tmux Plugin Manager is installed"
+  else
+    warn "check failed: Tmux Plugin Manager is missing at ${HOME}/.tmux/plugins/tpm/tpm"
+    failures=$((failures + 1))
+  fi
+
+  if [[ -d ${HOME}/.tmux/plugins/tmux-resurrect ]]; then
+    log "check passed: tmux-resurrect is installed"
+  else
+    warn "check failed: tmux-resurrect is missing at ${HOME}/.tmux/plugins/tmux-resurrect"
+    failures=$((failures + 1))
+  fi
+
+  if [[ -d ${HOME}/.tmux/plugins/tmux-continuum ]]; then
+    log "check passed: tmux-continuum is installed"
+  else
+    warn "check failed: tmux-continuum is missing at ${HOME}/.tmux/plugins/tmux-continuum"
+    failures=$((failures + 1))
+  fi
+
   (( failures == 0 ))
+}
+
+tmux_plugin_manager_dir() {
+  printf '%s\n' "${INSTALL_USER_HOME}/.tmux/plugins/tpm"
+}
+
+install_tmux_plugin_manager() {
+  local tpm_dir
+  local tpm_parent
+
+  require_install_user_context "tmux plugin manager install" || return 0
+
+  tpm_dir="$(tmux_plugin_manager_dir)"
+  tpm_parent="$(dirname "$tpm_dir")"
+
+  if [[ -x ${tpm_dir}/tpm ]]; then
+    log "Tmux Plugin Manager already installed"
+    return 0
+  fi
+
+  if ! command_exists git; then
+    warn "git is required to install Tmux Plugin Manager automatically"
+    return 1
+  fi
+
+  run_as_install_user mkdir -p "$tpm_parent"
+  run_as_install_user git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+}
+
+install_tmux_plugins() {
+  local tpm_dir
+  local tmux_conf
+
+  require_install_user_context "tmux plugin install" || return 0
+
+  tpm_dir="$(tmux_plugin_manager_dir)"
+  tmux_conf="${INSTALL_USER_HOME}/.tmux.conf"
+
+  if [[ ! -x ${tpm_dir}/bin/install_plugins ]]; then
+    warn "Tmux Plugin Manager install script is missing at ${tpm_dir}/bin/install_plugins"
+    return 1
+  fi
+
+  if [[ ! -r ${tmux_conf} ]]; then
+    warn "tmux config is missing at ${tmux_conf}; skipping tmux plugin installation"
+    return 0
+  fi
+
+  run_as_install_user env HOME="$INSTALL_USER_HOME" TMUX_PLUGIN_MANAGER_PATH="${INSTALL_USER_HOME}/.tmux/plugins" "${tpm_dir}/bin/install_plugins"
 }
 
 check_zsh() {
