@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.14.41",
+    "opencode-subagent-statusline": "^0.6.1",
+    "unique-names-generator": "^4.7.1"
+  }
+}
