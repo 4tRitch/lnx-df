@@ -3,7 +3,7 @@ description: Agente local para análisis y edición de código usando Qwen en ll
 mode: primary
 model: llamacpp/qwen3.5-4b
 temperature: 0.2
-steps: 8
+steps: 25
 permission:
   read: allow
   grep: allow
