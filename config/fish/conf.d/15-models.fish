@@ -48,7 +48,7 @@ function models --description 'List or run available AI models'
     
     # Handle --help or -h FIRST
     if $show_help
-        show_usage $all_models $model_count
+        show_help_only $all_models $model_count
         return 0
     end
     
@@ -107,15 +107,12 @@ function models --description 'List or run available AI models'
     # No valid flags - show usage
     echo "Error: Invalid command."
     echo ""
-    show_usage $all_models $model_count
+    show_help_only $all_models $model_count
     return 1
 end
 
-# Function to show usage
-function show_usage
-    set -l model_paths $argv[1]
-    set -l model_count $argv[2]
-    
+# Function to show help without model list
+function show_help_only
     echo "Usage:"
     echo "  models -l, --list          List available models"
     echo "  models --help, -h          Show this help"
@@ -123,12 +120,6 @@ function show_usage
     echo "  models -ri <index>         Run model by index (0-based)"
     echo "  models --run <nombre>      Run model by name"
     echo ""
-    echo "Available models:"
-    set -l idx 1
-    for path in $model_paths
-        printf '  - %s\n' (basename "$path")
-        set idx (math $idx + 1)
-    end
 end
 
 # Alias para acceso rápido
