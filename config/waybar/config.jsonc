@@ -7,7 +7,7 @@
 
   "modules-left": ["hyprland/window"],
   "modules-center": ["hyprland/workspaces"],
-  "modules-right": ["tray", "custom/keyboard", "network", "custom/bluetooth", "pulseaudio", "clock", "custom/power"],
+  "modules-right": ["tray", "custom/keyboard", "network", "custom/bluetooth", "pulseaudio", "clock", "custom/notification", "custom/power"],
 
   "hyprland/window": {
     "format": "{class}",
@@ -36,9 +36,9 @@
   },
 
   "network": {
-    "format-wifi": "[ 󰤨 ]",
+    "format-wifi": "[󰤨 ]",
     "format-ethernet": "[ 󰈀 ]",
-    "format-disconnected": "[ 󰤭 ]",
+    "format-disconnected": "[󰤭 ]",
     "tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%\nIP: {ipaddr}",
     "tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}",
     "tooltip-format-disconnected": "Disconnected",
@@ -51,6 +51,23 @@
     "interval": 5,
     "on-click": "~/.config/waybar/scripts/bluetooth-devices.sh --menu",
     "tooltip": true
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󰂚",
+      "none": "󰂜",
+      "dnd-notification": "󰂛",
+      "dnd-none": "󰂛"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
   },
 
   "custom/keyboard": {
@@ -73,7 +90,7 @@
   },
 
   "clock": {
-    "format": "{:%a %d/%m  %H:%M}",
+    "format": "{:%a %d  %H:%M}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>"
   },
 

@@ -58,6 +58,7 @@ tooltip {
 #window,
 #tray,
 #custom-keyboard,
+#custom-notification,
 #network,
 #custom-bluetooth,
 #pulseaudio,
@@ -116,4 +117,43 @@ window#waybar.empty #window {
 #network.disconnected,
 #pulseaudio.muted {
   color: #8b8b8b;
+}
+
+
+/* Notification badge */
+#custom-notification {
+  min-width: 26px;
+  padding: 0 10px;
+  color: #eeeeee;
+}
+
+/* No notifications */
+#custom-notification.none {
+  color: #8b8b8b;
+}
+
+/* Has notifications */
+#custom-notification.notification {
+  color: #f2f2f2;
+  background: rgba(34, 34, 46, 0.92);
+  border-color: rgba(245, 245, 245, 0.46);
+}
+
+/* Do Not Disturb */
+#custom-notification.dnd-none,
+#custom-notification.dnd-notification {
+  color: #f2df8c;
+  background: rgba(36, 32, 22, 0.92);
+  border-color: rgba(242, 223, 140, 0.48);
+}
+
+/* DND + notifications */
+#custom-notification.dnd-notification {
+  color: #ffd972;
+}
+
+/* Hover */
+#custom-notification:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
 }
