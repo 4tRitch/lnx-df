@@ -1,0 +1,24 @@
+{
+  "label" : "lock",
+  "action" : "pidof hyprlock >/dev/null 2>&1 || hyprlock",
+  "text" : "Lock",
+  "keybind" : "l"
+}
+{
+  "label" : "logout",
+  "action" : "/home/ritch/.config/hypr/scripts/shutdown-menu.sh logout",
+  "text" : "Logout",
+  "keybind" : "e"
+}
+{
+  "label" : "reboot",
+  "action" : "/home/ritch/.config/hypr/scripts/shutdown-menu.sh reboot",
+  "text" : "Reboot",
+  "keybind" : "r"
+}
+{
+  "label" : "shutdown",
+  "action" : "/home/ritch/.config/hypr/scripts/shutdown-menu.sh shutdown",
+  "text" : "Shutdown",
+  "keybind" : "s"
+}

@@ -1,0 +1,59 @@
+* {
+  background-image: none;
+  box-shadow: none;
+  font-family: "Inter", "CaskaydiaCove Nerd Font", Sans;
+}
+
+window {
+  background-color: rgba(8, 10, 12, 0.03);
+}
+
+button {
+  color: #f5f6f7;
+  background-color: rgba(19, 21, 24, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 26px;
+  margin: 0;
+  min-width: 148px;
+  min-height: 148px;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-position: center 34%;
+  background-size: 28%;
+  transition: 120ms ease;
+}
+
+button:focus {
+  color: #f5f6f7;
+  background-color: rgba(19, 21, 24, 0.40);
+  border-color: rgba(255, 255, 255, 0.10);
+  outline: none;
+}
+
+button:hover,
+button:active {
+  background-color: rgba(228, 232, 236, 0.86);
+  color: #0d1013;
+  border-color: rgba(255, 255, 255, 0.28);
+  outline: none;
+}
+
+button label {
+  color: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  text-shadow: none;
+  padding-top: 98px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#lock { background-image: image(url("/home/ritch/.config/wlogout/icons/lock.svg")); }
+#logout { background-image: image(url("/home/ritch/.config/wlogout/icons/logout.svg")); }
+#reboot { background-image: image(url("/home/ritch/.config/wlogout/icons/reboot.svg")); }
+#shutdown { background-image: image(url("/home/ritch/.config/wlogout/icons/shutdown.svg")); }
+
+#lock:hover, #lock:active { background-image: image(url("/home/ritch/.config/wlogout/icons/lock-dark.svg")); }
+#logout:hover, #logout:active { background-image: image(url("/home/ritch/.config/wlogout/icons/logout-dark.svg")); }
+#reboot:hover, #reboot:active { background-image: image(url("/home/ritch/.config/wlogout/icons/reboot-dark.svg")); }
+#shutdown:hover, #shutdown:active { background-image: image(url("/home/ritch/.config/wlogout/icons/shutdown-dark.svg")); }

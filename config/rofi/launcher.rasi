@@ -1,77 +1,79 @@
 * {
-  bg: rgba(14, 16, 16, 58%);
-  bg-panel: rgba(18, 20, 20, 44%);
-  bg-hover: rgba(235, 235, 235, 16%);
-  bg-active: rgba(235, 235, 235, 22%);
-  fg: #d4d7d7;
-  fg-muted: #828787;
-  fg-strong: #f0f0f0;
-  border: rgba(230, 230, 230, 30%);
+  bg: rgba(10, 12, 14, 86%);
+  bg-panel: rgba(20, 23, 26, 92%);
+  bg-panel-strong: rgba(27, 32, 37, 96%);
+  bg-hover: rgba(255, 255, 255, 10%);
+  bg-active: rgba(255, 255, 255, 16%);
+  fg: #f3f4f6;
+  fg-muted: #b8bcc2;
+  fg-subtle: #8b9097;
+  fg-strong: #ffffff;
+  border: rgba(243, 244, 246, 30%);
+  border-soft: rgba(243, 244, 246, 14%);
 
-  font: "DM Mono 8";
+  font: "DM Mono 11";
 }
 
 window {
   transparency: "real";
   location: center;
   anchor: center;
-  width: 37%;
+  width: 42%;
   border: 1px;
   border-color: @border;
-  border-radius: 2px;
+  border-radius: 14px;
   background-color: @bg;
 }
 
 mainbox {
-  spacing: 4px;
-  padding: 7px;
+  spacing: 10px;
+  padding: 16px;
   background-color: transparent;
-  children: [ inputbar, mode-switcher, listview ];
+  children: [ inputbar, listview ];
 }
 
 inputbar {
   expand: false;
   orientation: horizontal;
-  spacing: 6px;
-  padding: 0 0 2px 0;
+  spacing: 10px;
+  padding: 0;
   background-color: transparent;
   children: [ prompt, entry ];
 }
 
 prompt {
   expand: false;
-  width: 120px;
-  padding: 3px 6px;
+  padding: 0 0 0 2px;
   background-color: transparent;
-  text-color: @fg-strong;
+  text-color: @fg-muted;
 }
 
 entry {
   expand: true;
-  padding: 3px 6px;
-  placeholder: "Search";
-  placeholder-color: @fg-muted;
+  padding: 12px 14px;
+  placeholder: "Search applications";
+  placeholder-color: @fg-subtle;
   background-color: @bg-panel;
   text-color: @fg;
   border: 1px;
-  border-color: rgba(230, 230, 230, 16%);
-  border-radius: 2px;
+  border-color: @border-soft;
+  border-radius: 999px;
 }
 
 mode-switcher {
   expand: false;
-  spacing: 3px;
-  padding: 0 0 2px 0;
+  spacing: 6px;
+  padding: 0 2px;
   background-color: transparent;
 }
 
 button {
-  padding: 2px 7px;
+  padding: 8px 12px;
   background-color: @bg-panel;
-  text-color: @fg-muted;
+  text-color: @fg-subtle;
   border: 1px;
-  border-color: rgba(230, 230, 230, 14%);
-  border-radius: 2px;
+  border-color: @border-soft;
+  border-radius: 999px;
 }
 
 button selected {
@@ -82,33 +84,36 @@ button selected {
 
 listview {
   columns: 1;
-  lines: 11;
+  lines: 10;
   cycle: true;
   dynamic: true;
   scrollbar: false;
   fixed-height: false;
-  spacing: 2px;
+  spacing: 6px;
   background-color: transparent;
 }
 
 element {
   orientation: horizontal;
-  spacing: 7px;
-  padding: 3px 6px;
-  background-color: transparent;
+  spacing: 12px;
+  padding: 12px 14px;
+  background-color: @bg-panel;
   text-color: @fg;
-  border-radius: 2px;
+  border: 1px;
+  border-color: transparent;
+  border-radius: 12px;
 }
 
 element selected.normal,
 element selected.active,
 element selected.urgent {
-  background-color: @bg-hover;
+  background-color: @bg-panel-strong;
   text-color: @fg-strong;
+  border-color: @border;
 }
 
 element-icon {
-  size: 15px;
+  size: 22px;
   background-color: transparent;
 }
 
@@ -120,10 +125,11 @@ element-text {
 }
 
 message {
-  padding: 5px;
+  padding: 12px;
   background-color: @bg-panel;
   border: 1px;
-  border-color: @border;
+  border-color: @border-soft;
+  border-radius: 12px;
 }
 
 textbox {

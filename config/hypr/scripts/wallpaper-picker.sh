@@ -68,3 +68,7 @@ if [ -n "$cursor_pos" ]; then
 fi
 
 "$wallpaper_client" img "$selected" "${transition_args[@]}"
+
+if [ -x "$HOME/.config/sddm/scripts/sync-current-wallpaper.sh" ]; then
+  "$HOME/.config/sddm/scripts/sync-current-wallpaper.sh" "$selected" >/dev/null 2>&1 || true
+fi

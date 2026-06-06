@@ -7,7 +7,7 @@ configuration {
   display-window: "󰖲  Windows";
   drun-display-format: "{name}";
   window-format: "{t}";
-  sidebar-mode: true;
+  sidebar-mode: false;
   matching: "fuzzy";
   sort: true;
   sorting-method: "fzf";
