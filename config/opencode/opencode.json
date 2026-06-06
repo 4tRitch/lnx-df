@@ -1,8 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [
-    "oh-my-openagent@latest"
-  ],
   "provider": {
     "llamacpp": {
       "npm": "@ai-sdk/openai-compatible",

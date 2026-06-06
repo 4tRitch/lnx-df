@@ -17,6 +17,14 @@ alias gl 'pwd'
 alias ls 'll'
 alias dd 'shutdown now'
 
+function codex --description 'run Codex in unrestrict mode'
+  command codex -s danger-full-access -a never $argv
+end
+
+function cdx --description 'short alias for Codex in unrestrict mode'
+  codex $argv
+end
+
 if test -d $DFL
   function df --description 'cd into dotfiles root'
     cd $DFL

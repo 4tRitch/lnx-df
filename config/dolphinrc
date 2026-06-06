@@ -1,16 +1,18 @@
 MenuBar=Disabled
 
 [General]
-AlwaysShowTabBar=false
+AlwaysShowTabBar=true
 BrowseThroughArchives=true
+ConfirmClosingMultipleTabs=false
 EditableUrl=false
 GlobalViewProps=true
-OpenExternallyCalledFolderInNewTab=false
-RememberOpenedTabs=false
+OpenExternallyCalledFolderInNewTab=true
 ShowFullPath=false
 ShowSelectionToggle=false
 ShowSpaceInfo=false
+ShowStatusBar=FullWidth
 ShowToolTips=true
+ShowZoomSlider=true
 Version=202
 ViewPropsTimestamp=2026,4,26,13,0,0.000
 
