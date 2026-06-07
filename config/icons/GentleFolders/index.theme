@@ -1,10 +1,10 @@
 [Icon Theme]
 Name=GentleFolders
-Comment=Rounded monochrome folder overrides for Dolphin
-Inherits=breeze-dark,breeze,hicolor
+Comment=Rounded gray/white folder overrides for GTK file managers
+Inherits=Papirus-Dark,hicolor
 Example=folder
 FollowsColorScheme=false
-Directories=places/16,places/22,places/32,places/48,places/64,places/96
+Directories=places/16,places/22,places/32,places/48,places/64,places/96,mimetypes/16,mimetypes/22,mimetypes/24,mimetypes/32,mimetypes/48,mimetypes/64
 
 [places/16]
 Size=16
@@ -34,4 +34,34 @@ Type=Fixed
 [places/96]
 Size=96
 Context=Places
+Type=Fixed
+
+[mimetypes/16]
+Size=16
+Context=MimeTypes
+Type=Fixed
+
+[mimetypes/22]
+Size=22
+Context=MimeTypes
+Type=Fixed
+
+[mimetypes/24]
+Size=24
+Context=MimeTypes
+Type=Fixed
+
+[mimetypes/32]
+Size=32
+Context=MimeTypes
+Type=Fixed
+
+[mimetypes/48]
+Size=48
+Context=MimeTypes
+Type=Fixed
+
+[mimetypes/64]
+Size=64
+Context=MimeTypes
 Type=Fixed

@@ -5,6 +5,12 @@ if ! command -v wlogout >/dev/null 2>&1; then
   exec ~/.config/waybar/scripts/power-menu.sh --menu-rofi-fallback
 fi
 
+lock_file="${XDG_RUNTIME_DIR:-/tmp}/wlogout-power-menu.lock"
+exec 9>"$lock_file"
+flock -n 9 || exit 0
+
+pgrep -x wlogout >/dev/null 2>&1 && exit 0
+
 monitor_json="$(hyprctl monitors -j 2>/dev/null || printf '[]')"
 width="$(printf '%s' "$monitor_json" | jq -r 'first(.[] | select(.focused == true) | .width) // 1920' 2>/dev/null)"
 height="$(printf '%s' "$monitor_json" | jq -r 'first(.[] | select(.focused == true) | .height) // 1080' 2>/dev/null)"
