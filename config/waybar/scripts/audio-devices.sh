@@ -15,16 +15,18 @@ ensure_pulse() {
 }
 
 save_preference() {
-  local key="$1" value="$2" sink source
+  local key="$1" value="$2" sink source source_volume
 
   sink=""
   source=""
+  source_volume=""
 
   if [[ -f "$PREF_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$PREF_FILE"
     sink="${PREFERRED_SINK:-}"
     source="${PREFERRED_SOURCE:-}"
+    source_volume="${PREFERRED_SOURCE_VOLUME:-}"
   fi
 
   case "$key" in
@@ -35,6 +37,7 @@ save_preference() {
   {
     printf 'PREFERRED_SINK=%q\n' "$sink"
     printf 'PREFERRED_SOURCE=%q\n' "$source"
+    [[ -n "$source_volume" ]] && printf 'PREFERRED_SOURCE_VOLUME=%q\n' "$source_volume"
   } > "$PREF_FILE"
 }
 
@@ -62,6 +65,13 @@ set_sink() {
 set_source() {
   local source="$1"
   pactl set-default-source "$source"
+  if [[ -f "$PREF_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$PREF_FILE"
+    if [[ -n "${PREFERRED_SOURCE_VOLUME:-}" ]]; then
+      pactl set-source-volume "$source" "$PREFERRED_SOURCE_VOLUME" >/dev/null 2>&1 || true
+    fi
+  fi
   move_source_outputs "$source"
   save_preference source "$source"
 }
@@ -81,6 +91,9 @@ restore() {
 
   if [[ -n "${PREFERRED_SOURCE:-}" ]]; then
     pactl set-default-source "$PREFERRED_SOURCE" >/dev/null 2>&1 || true
+    if [[ -n "${PREFERRED_SOURCE_VOLUME:-}" ]]; then
+      pactl set-source-volume "$PREFERRED_SOURCE" "$PREFERRED_SOURCE_VOLUME" >/dev/null 2>&1 || true
+    fi
     move_source_outputs "$PREFERRED_SOURCE"
   fi
 }

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Vial
+Comment=Configure QMK/Vial compatible keyboards
+Exec=/home/ritch/Apps/Vial-v0.7.5-x86_64.AppImage
+Icon=input-keyboard
+Type=Application
+Categories=Utility;
+Terminal=false
+StartupNotify=true
+Keywords=keyboard;qmk;vial;firmware;
