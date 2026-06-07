@@ -1,0 +1,23 @@
+- 1.1.19
+- _NAME: MX Keys Mini for Business
+  _absent: [hi-res-scroll, lowres-scroll-mode, hires-smooth-invert, hires-smooth-resolution, hires-scroll-mode, scroll-ratchet, scroll-ratchet-torque, smart-shift,
+    thumb-scroll-invert, thumb-scroll-mode, onboard_profiles, report_rate, report_rate_extended, pointer_speed, dpi, dpi_extended, speed-change, backlight-timed,
+    led_control, led_zone_, rgb_control, rgb_zone_, brightness_control, per-key-lighting, reprogrammable-keys, persistent-remappable-keys, force-sensing,
+    crown-smooth, divert-crown, divert-gkeys, m-key-leds, mr-key-led, gesture2-gestures, gesture2-divert, gesture2-params, haptic-level, haptic-play, sidetone,
+    equalizer, adc_power_management]
+  _battery: 4100
+  _modelId: B36E00000000
+  _sensitive: {backlight: false, fn-swap: false}
+  _serial: 59E5DF70
+  _unitId: 59E5DF70
+  _wpid: B36E
+  backlight: 3
+  backlight_duration_hands_in: 10
+  backlight_duration_hands_out: 10
+  backlight_duration_powered: 10
+  backlight_level: 1
+  change-host: null
+  disable-keyboard-keys: {1: false, 8: false, 16: false}
+  divert-keys: {226: 0, 227: 0, 229: 1, 231: 1, 232: 1, 233: 1, 259: 1, 264: 1, 266: 1, 279: 0, 284: 1}
+  fn-swap: true
+  multiplatform: 0
