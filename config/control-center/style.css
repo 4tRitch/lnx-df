@@ -1,0 +1,399 @@
+.control-overlay-window,
+.control-backdrop {
+  background: transparent;
+}
+
+.control-window,
+.control-panel {
+  background: rgba(20, 20, 20, 0.92);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.round-button {
+  min-width: 46px;
+  min-height: 32px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 19px;
+}
+
+.tile {
+  min-width: 174px;
+  min-height: 50px;
+  padding: 7px 9px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.tile.on {
+  background: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.98);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.tile.off {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.split-tile {
+  padding: 0;
+}
+
+.split-tile.on {
+  background: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.98);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.split-tile.off {
+  background: rgba(36, 36, 36, 0.92);
+  color: rgba(255, 255, 255, 0.46);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.split-tile-primary,
+.split-tile-detail {
+  min-height: 50px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+.split-tile-primary {
+  padding: 7px 8px;
+}
+
+.split-tile-detail {
+  min-width: 40px;
+  padding: 0 8px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.split-tile-divider {
+  min-width: 1px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.34),
+    transparent
+  );
+}
+
+.split-tile-primary:hover,
+.split-tile-detail:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.tile-icon {
+  font-size: 17px;
+  min-width: 28px;
+}
+
+.tile-title {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tile-subtitle {
+  font-size: 10px;
+  opacity: 0.72;
+}
+
+.slider-card,
+.notifications-card {
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+scale trough {
+  min-height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+scale highlight {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.slider-value {
+  min-width: 42px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.media-card {
+  min-height: 150px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.media-content {
+  padding: 10px 12px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(20, 20, 20, 0.86), rgba(20, 20, 20, 0.54));
+}
+
+.media-card scale trough {
+  min-height: 6px;
+}
+
+.media-title {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.media-subtitle {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.media-time {
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.72;
+}
+
+.media-controls {
+  margin-top: 2px;
+}
+
+.media-button {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+  min-width: 44px;
+  min-height: 34px;
+}
+
+.media-button:hover,
+.mini-button:hover,
+.notifications-card:hover,
+.tile:hover,
+.round-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.notifications-card {
+  font-weight: 700;
+}
+
+.notifications-title {
+  font-weight: 900;
+}
+
+.notification-count {
+  min-width: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.mini-button {
+  min-height: 26px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.90);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mini-button.active {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.mini-button.icon-button {
+  min-width: 32px;
+  padding: 3px 8px;
+  font-size: 15px;
+}
+
+.notification-row {
+  padding: 4px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.notification-group-button,
+.notification-detail-button {
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.notification-group-button:hover,
+.notification-detail-button:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.notification-detail-button {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.notification-action-row {
+  min-height: 34px;
+}
+
+.notification-detail-row {
+  margin-left: 34px;
+}
+
+.notification-delete-button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 214, 128, 0.20);
+  background: rgba(255, 214, 128, 0.12);
+  color: rgba(255, 235, 190, 0.94);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.notification-delete-button:hover {
+  border-color: rgba(255, 214, 128, 0.42);
+  background: rgba(255, 214, 128, 0.22);
+}
+
+.notification-icon {
+  margin-right: 2px;
+}
+
+.notification-app {
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.notification-time {
+  font-size: 10px;
+  opacity: 0.62;
+  font-weight: 800;
+}
+
+.notification-stack-badge {
+  min-width: 28px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.notification-row-title {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.notification-row-body,
+.notification-empty {
+  font-size: 11px;
+  opacity: 0.72;
+}
+
+.notification-empty {
+  padding: 7px 10px;
+}
+
+.embedded-list {
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.detail-section {
+  margin-top: 4px;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 900;
+  opacity: 0.72;
+}
+
+.embedded-row {
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.embedded-row:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.feature-switch-row,
+.mic-switch-row {
+  min-height: 46px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.embedded-row.connected-row {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.embedded-row.connecting-row {
+  background: rgba(255, 215, 128, 0.16);
+  border-color: rgba(255, 215, 128, 0.34);
+  color: rgba(255, 235, 180, 0.96);
+}
+
+.embedded-row.failed-row {
+  background: rgba(255, 120, 120, 0.16);
+  border-color: rgba(255, 120, 120, 0.42);
+  color: rgba(255, 190, 190, 0.96);
+}
+
+.wifi-password-card {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.wifi-password-title {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.wifi-password-hint {
+  font-size: 11px;
+  opacity: 0.72;
+}

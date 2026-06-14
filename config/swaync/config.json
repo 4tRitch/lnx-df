@@ -46,5 +46,12 @@
     "dnd": {
       "text": "Do Not Disturb"
     }
+  },
+
+  "scripts": {
+    "lnx-control-center-history": {
+      "exec": "bash -lc '\"${XDG_CONFIG_HOME:-$HOME/.config}/control-center/log-swaync-notification\"'",
+      "run-on": "receive"
+    }
   }
 }

@@ -266,7 +266,10 @@ packages_for_key() {
       esac
       ;;
     tmux)
-      printf 'tmux\n'
+      case "${PACKAGE_MANAGER}" in
+        pacman) printf 'tmux\ninetutils\n' ;;
+        *) printf 'tmux\n' ;;
+      esac
       ;;
     nvim)
       printf 'neovim\n'
@@ -374,11 +377,6 @@ check_symlink_target() {
   local target=$1
   local expected=$2
 
-  if [[ ! -L $target ]]; then
-    warn "missing symlink: ${target}"
-    return 1
-  fi
-
   local current desired
   current="$(readlink -f "$target" 2>/dev/null || true)"
   desired="$(readlink -f "$expected" 2>/dev/null || true)"
@@ -388,7 +386,12 @@ check_symlink_target() {
     return 0
   fi
 
-  warn "symlink points elsewhere: ${target}"
+  if [[ ! -L $target ]]; then
+    warn "missing symlink: ${target}"
+    return 1
+  fi
+
+  warn "symlink points elsewhere: ${target} -> ${current:-unknown}; expected ${desired:-$expected}"
   return 1
 }
 
@@ -675,8 +678,8 @@ install_nerd_fonts() {
 }
 
 install_tmux() {
-  if command_exists tmux; then
-    log "tmux already installed"
+  if command_exists tmux && command_exists hostname; then
+    log "tmux runtime already installed"
   else
     install_package_key tmux || return 1
   fi
@@ -1014,6 +1017,7 @@ check_dotfiles() {
 check_tmux() {
   local failures=0
   check_command_component tmux Tmux || failures=$((failures + 1))
+  check_command_component hostname Hostname || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
 
@@ -1087,7 +1091,8 @@ install_tmux_plugins() {
     return 0
   fi
 
-  run_as_install_user env HOME="$INSTALL_USER_HOME" TMUX_PLUGIN_MANAGER_PATH="${INSTALL_USER_HOME}/.tmux/plugins" "${tpm_dir}/bin/install_plugins"
+  run_as_install_user env HOME="$INSTALL_USER_HOME" tmux start-server \; set-environment -g TMUX_PLUGIN_MANAGER_PATH "${INSTALL_USER_HOME}/.tmux/plugins/" || return 1
+  run_as_install_user env HOME="$INSTALL_USER_HOME" "${tpm_dir}/bin/install_plugins"
 }
 
 check_zsh() {

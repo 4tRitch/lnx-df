@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+panel="${XDG_CONFIG_HOME:-$HOME/.config}/control-center/control-center.py"
+pid_file="${XDG_RUNTIME_DIR:-/tmp}/lnx-df-control-center.pid"
+log="${XDG_RUNTIME_DIR:-/tmp}/lnx-control-center.log"
+layer_shell_lib="/usr/lib/libgtk4-layer-shell.so"
+mode="${1:---toggle}"
+
+if [[ ! -x "$panel" ]]; then
+  printf 'control center panel not found or not executable: %s\n' "$panel" >> "$log"
+  exit 0
+fi
+
+if [[ -r "$layer_shell_lib" && "${LD_PRELOAD:-}" != *libgtk4-layer-shell* ]]; then
+  export LD_PRELOAD="${layer_shell_lib}${LD_PRELOAD:+:$LD_PRELOAD}"
+fi
+
+if [[ -r "$pid_file" ]]; then
+  pid="$(<"$pid_file")"
+  if [[ "$pid" =~ ^[0-9]+$ ]] && [[ -r "/proc/$pid/cmdline" ]] && tr '\0' ' ' < "/proc/$pid/cmdline" | grep -q 'control-center.py'; then
+    if [[ "$mode" == "--daemon" ]]; then
+      exit 0
+    fi
+    kill -USR1 "$pid" 2>/dev/null || true
+    exit 0
+  fi
+  rm -f "$pid_file"
+fi
+
+case "$mode" in
+  --daemon)
+    setsid -f "$panel" --daemon >> "$log" 2>&1
+    ;;
+  --toggle|"")
+    setsid -f "$panel" --toggle >> "$log" 2>&1
+    ;;
+  *)
+    printf 'unknown control center mode: %s\n' "$mode" >> "$log"
+    exit 1
+    ;;
+esac

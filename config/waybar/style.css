@@ -59,9 +59,7 @@ tooltip {
 #tray,
 #custom-keyboard,
 #custom-notification,
-#network,
-#custom-bluetooth,
-#pulseaudio,
+#custom-control-center,
 #custom-power,
 #clock {
   margin: 4px 0;
@@ -94,18 +92,15 @@ window#waybar.empty #window {
   padding: 0 10px;
 }
 
-#network,
-#custom-bluetooth,
+#custom-control-center,
 #custom-keyboard,
 #custom-power {
   min-width: 42px;
   padding: 0 10px;
 }
 
-#custom-bluetooth.connected,
-#custom-keyboard,
-#network,
-#pulseaudio {
+#custom-control-center,
+#custom-keyboard {
   color: #eeeeee;
 }
 
@@ -113,18 +108,19 @@ window#waybar.empty #window {
   color: #f2df8c;
 }
 
-#custom-bluetooth.off,
-#network.disconnected,
-#pulseaudio.muted {
-  color: #8b8b8b;
-}
 
 
-/* Notification badge */
+/* Action badges */
+#custom-control-center,
 #custom-notification {
   min-width: 26px;
   padding: 0 10px;
   color: #eeeeee;
+}
+
+#custom-control-center:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 /* No notifications */

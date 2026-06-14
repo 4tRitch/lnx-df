@@ -98,6 +98,39 @@ restore() {
   fi
 }
 
+restore_when_available() {
+  ensure_pulse || exit 0
+
+  if [[ -f "$PREF_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$PREF_FILE"
+  fi
+
+  local preferred_sink_ok=1 preferred_source_ok=1
+  [[ -z "${PREFERRED_SINK:-}" ]] || preferred_sink_ok=0
+  [[ -z "${PREFERRED_SOURCE:-}" ]] || preferred_source_ok=0
+
+  for _ in {1..30}; do
+    if [[ -n "${PREFERRED_SINK:-}" ]] && pactl list short sinks 2>/dev/null | cut -f2 | grep -Fxq "$PREFERRED_SINK"; then
+      pactl set-default-sink "$PREFERRED_SINK" >/dev/null 2>&1 || true
+      move_sink_inputs "$PREFERRED_SINK"
+      preferred_sink_ok=1
+    fi
+
+    if [[ -n "${PREFERRED_SOURCE:-}" ]] && pactl list short sources 2>/dev/null | cut -f2 | grep -Fxq "$PREFERRED_SOURCE"; then
+      pactl set-default-source "$PREFERRED_SOURCE" >/dev/null 2>&1 || true
+      if [[ -n "${PREFERRED_SOURCE_VOLUME:-}" ]]; then
+        pactl set-source-volume "$PREFERRED_SOURCE" "$PREFERRED_SOURCE_VOLUME" >/dev/null 2>&1 || true
+      fi
+      move_source_outputs "$PREFERRED_SOURCE"
+      preferred_source_ok=1
+    fi
+
+    [[ "$preferred_sink_ok" -eq 1 && "$preferred_source_ok" -eq 1 ]] && return 0
+    sleep 1
+  done
+}
+
 list_sinks() {
   local default_sink
   default_sink="$(pactl get-default-sink 2>/dev/null || true)"
@@ -152,6 +185,6 @@ menu() {
 
 case "${1:---menu}" in
   --menu) menu ;;
-  --restore) restore ;;
+  --restore) restore_when_available ;;
   *) menu ;;
 esac

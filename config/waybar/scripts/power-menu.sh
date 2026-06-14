@@ -28,11 +28,7 @@ menu_rofi_fallback() {
 }
 
 menu() {
-  if command -v wlogout >/dev/null 2>&1; then
-    exec ~/.config/hypr/scripts/power-menu-wlogout.sh
-  fi
-
-  menu_rofi_fallback
+  exec ~/.config/hypr/scripts/power-menu-rofi.sh
 }
 
 case "${1:---status}" in

@@ -7,7 +7,7 @@
 
   "modules-left": ["hyprland/window"],
   "modules-center": ["hyprland/workspaces"],
-  "modules-right": ["tray", "custom/keyboard", "network", "custom/bluetooth", "pulseaudio", "clock", "custom/notification", "custom/power"],
+  "modules-right": ["tray", "custom/keyboard", "clock", "custom/control-center", "custom/power"],
 
   "hyprland/window": {
     "format": "{class}",
@@ -35,22 +35,10 @@
     "spacing": 10
   },
 
-  "network": {
-    "format-wifi": "[󰤨 ]",
-    "format-ethernet": "[ 󰈀 ]",
-    "format-disconnected": "[󰤭 ]",
-    "tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%\nIP: {ipaddr}",
-    "tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}",
-    "tooltip-format-disconnected": "Disconnected",
-    "on-click": "~/.config/waybar/scripts/wifi-menu.sh --menu"
-  },
-
-  "custom/bluetooth": {
-    "exec": "~/.config/waybar/scripts/bluetooth-devices.sh --status",
-    "return-type": "json",
-    "interval": 5,
-    "on-click": "~/.config/waybar/scripts/bluetooth-devices.sh --menu",
-    "tooltip": true
+  "custom/control-center": {
+    "tooltip": false,
+    "format": "[󰕮]",
+    "on-click": "~/.config/control-center/lnx-control-center"
   },
 
   "custom/notification": {
@@ -78,15 +66,6 @@
     "on-click-right": "~/.config/waybar/scripts/keyboard-layout.sh --cycle",
     "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
     "tooltip": true
-  },
-
-  "pulseaudio": {
-    "format": "[  {volume}%]",
-    "format-muted": "[󰝟  muted]",
-    "scroll-step": 5,
-    "max-volume": 150,
-    "on-click": "~/.config/waybar/scripts/audio-devices.sh --menu",
-    "tooltip-format": "{desc}\nScroll: volume ±5%\nClick: outputs + microphones"
   },
 
   "clock": {
