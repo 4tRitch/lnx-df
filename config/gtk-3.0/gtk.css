@@ -1,36 +1,28 @@
-@define-color theme_selected_bg_color #d9d9d9;
-@define-color theme_selected_fg_color #111111;
-@define-color theme_unfocused_selected_bg_color #8a8f96;
-@define-color theme_unfocused_selected_fg_color #ffffff;
-@define-color accent_bg_color #d9d9d9;
-@define-color accent_fg_color #111111;
-@define-color theme_button_checked_bg_color #d9d9d9;
-@define-color theme_button_checked_fg_color #111111;
-
+/* Keep GTK overrides scoped. Global GTK CSS leaks into Electron/native menus. */
 .nemo-window .sidebar .view:selected,
 .nemo-window .sidebar .view:selected:focus,
 .nemo-window .view:selected,
 .nemo-window .view:selected:focus,
 .nemo-window rubberband,
-selection {
+.nemo-window selection {
   background-color: #d9d9d9;
   color: #111111;
 }
 
-.path-bar button:checked,
-.path-bar button:hover,
-button.toggle:checked,
-modelbutton:hover,
-modelbutton:checked {
+.nemo-window .path-bar button:checked,
+.nemo-window .path-bar button:hover,
+.nemo-window button.toggle:checked,
+.nemo-window modelbutton:hover,
+.nemo-window modelbutton:checked {
   background-image: none;
   background-color: rgba(235, 235, 235, 0.18);
   color: #f5f5f5;
   border-color: rgba(255,255,255,0.16);
 }
 
-scale highlight,
-progressbar progress,
-trough highlight {
+.nemo-window scale highlight,
+.nemo-window progressbar progress,
+.nemo-window trough highlight {
   background-image: none;
   background-color: #d9d9d9;
   color: #111111;

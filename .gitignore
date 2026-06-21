@@ -2,3 +2,4 @@
 **/nvim/
 ./config/nvim
 installer/.state/
+**/__pycache__/**

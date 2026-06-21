@@ -62,10 +62,9 @@ Supported package-manager families:
 
 Arch notes:
 
-- The installer uses `pacman` first.
-- If a requested package is missing from configured `pacman` repos and `paru` is already installed, it will use `paru` for that package.
-- The installer does not bootstrap `paru` automatically.
-- AUR installs are skipped when running the installer as root.
+- The installer uses only official `pacman` repositories for system packages.
+- AUR helper installs are intentionally disabled; packages missing from official repositories are reported and skipped.
+- The `dotfiles` component installs local guard wrappers for `makepkg` install mode and common AUR helpers (`yay`, `paru`, `pikaur`, `trizen`, `aurman`) into `/usr/local/bin`.
 
 Some components also use language-native installers or upstream install scripts when that is the simplest supported path, for example `rustup`, `go install`, npm global packages, or the local `.NET` installer.
 
@@ -127,7 +126,7 @@ Checks also surface when a tool only became visible because the installer activa
 `nerd-fonts` tries the simplest safe route in this order:
 
 1. Reuse an already installed CaskaydiaCove Nerd Font.
-2. On Arch, install `ttf-cascadia-code-nerd` through `pacman` or `paru` when available.
+2. On Arch, install `ttf-cascadia-code-nerd` through official `pacman` repositories when available.
 3. Otherwise, download the official `CascadiaCode.zip` Nerd Fonts release into `~/.local/share/fonts/NerdFonts/CaskaydiaCove` and refresh the font cache when `fc-cache` is available.
 
 ## Uninstall Philosophy

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ChatGPT
+Comment=ChatGPT web app
+Exec=/home/ritch/.config/hypr/scripts/webapp-launch.sh --id chatgpt
+Terminal=false
+Categories=Network;WebBrowser;
+StartupWMClass=brave-chatgpt.com__-Default
+X-LnxDf-WebApp=true
+NoDisplay=true
+Icon=/home/ritch/.local/share/lnx-df-webapps/icons/chatgpt.png

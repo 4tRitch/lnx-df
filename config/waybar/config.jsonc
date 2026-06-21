@@ -13,6 +13,8 @@
     "format": "{class}",
     "rewrite": {
       "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
+      "^brave-chatgpt\\.com__-Default$": "ChatGPT",
+      "^lnx-df-webapp-chatgpt$": "ChatGPT",
       "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
     },
     "align": 0.5,

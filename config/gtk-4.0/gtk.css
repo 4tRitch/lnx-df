@@ -1,17 +1,1 @@
-:root {
-  --accent-bg-color: #d9d9d9;
-  --accent-fg-color: #111111;
-  --theme-selected-bg-color: #d9d9d9;
-  --theme-selected-fg-color: #111111;
-}
-
-selection {
-  background-color: #d9d9d9;
-  color: #111111;
-}
-
-scale highlight,
-progressbar progress {
-  background-color: #d9d9d9;
-  color: #111111;
-}
+/* Intentionally empty: avoid global GTK4 overrides leaking into apps. */

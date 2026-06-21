@@ -594,6 +594,8 @@ install_dotfiles() {
   remove_repo_symlink "${HOME}/.config/tmux"
   ensure_symlink "${CONFIG_ROOT}/tmux/tmux.conf" "${HOME}/.config/tmux/tmux.conf"
   ensure_symlink "${HOME}/.config/tmux/tmux.conf" "${HOME}/.tmux.conf"
+
+  install_arch_aur_guard
 }
 
 uninstall_dotfiles() {
@@ -607,6 +609,135 @@ uninstall_dotfiles() {
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/tmux/tmux.conf"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/kitty"
   remove_repo_symlink "${INSTALL_USER_HOME}/.config/tmux"
+  uninstall_arch_aur_guard
+}
+
+arch_aur_guard_helpers() {
+  printf '%s\n' yay paru pikaur trizen aurman
+}
+
+arch_aur_guard_wrapper_present() {
+  local wrapper=$1
+  local path="/usr/local/bin/${wrapper}"
+
+  [[ -x $path ]] || return 1
+
+  if grep -Fq 'lnx-df managed AUR guard' "$path" 2>/dev/null; then
+    return 0
+  fi
+
+  case "$wrapper" in
+    makepkg) grep -Fq 'makepkg install mode is disabled by local AUR guard' "$path" 2>/dev/null ;;
+    *) grep -Fq 'AUR helpers are intentionally blocked' "$path" 2>/dev/null ;;
+  esac
+}
+
+write_arch_aur_guard_scripts() {
+  local target_dir=$1
+
+  cat >"${target_dir}/makepkg" <<'EOF'
+#!/usr/bin/env bash
+# lnx-df managed AUR guard
+for arg in "$@"; do
+  if [[ "$arg" == "--install" || ( "$arg" == -[^-]* && "$arg" == *i* ) ]]; then
+    cat >&2 <<MSG
+BLOCKED: makepkg install mode is disabled by local AUR guard.
+Reason: this machine blocks accidental AUR-style builds/installs.
+Build-only use is still allowed via /usr/bin/makepkg without -i/--install.
+MSG
+    exit 126
+  fi
+done
+exec /usr/bin/makepkg "$@"
+EOF
+
+  local helper
+  for helper in $(arch_aur_guard_helpers); do
+    cat >"${target_dir}/${helper}" <<'EOF'
+#!/usr/bin/env bash
+# lnx-df managed AUR guard
+cmd="$(basename "$0")"
+cat >&2 <<MSG
+BLOCKED: '$cmd' is disabled on this machine.
+Reason: AUR helpers are intentionally blocked to reduce supply-chain attack surface.
+Use official repos, Flatpak, or Homebrew instead.
+MSG
+exit 126
+EOF
+  done
+}
+
+install_arch_aur_guard() {
+  load_platform_info
+  [[ ${PACKAGE_MANAGER} == pacman ]] || return 0
+
+  local sudo_cmd
+  if ! sudo_cmd="$(sudo_prefix)"; then
+    warn "sudo is required to install Arch AUR guard wrappers"
+    return 1
+  fi
+
+  if (( DRY_RUN )); then
+    log "dry-run: install lnx-df AUR guard wrappers into /usr/local/bin"
+    return 0
+  fi
+
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  write_arch_aur_guard_scripts "$tmp_dir"
+
+  local wrapper
+  for wrapper in makepkg $(arch_aur_guard_helpers); do
+    if [[ -n $sudo_cmd ]]; then
+      run_cmd "$sudo_cmd" install -Dm755 "${tmp_dir}/${wrapper}" "/usr/local/bin/${wrapper}"
+    else
+      run_cmd install -Dm755 "${tmp_dir}/${wrapper}" "/usr/local/bin/${wrapper}"
+    fi
+  done
+
+  rm -rf "$tmp_dir"
+}
+
+check_arch_aur_guard() {
+  load_platform_info
+  [[ ${PACKAGE_MANAGER} == pacman ]] || return 0
+
+  local failures=0
+  local wrapper
+  for wrapper in makepkg $(arch_aur_guard_helpers); do
+    if arch_aur_guard_wrapper_present "$wrapper"; then
+      log "check passed: AUR guard wrapper ${wrapper}"
+    else
+      warn "check failed: AUR guard wrapper missing for ${wrapper}"
+      failures=$((failures + 1))
+    fi
+  done
+
+  (( failures == 0 ))
+}
+
+uninstall_arch_aur_guard() {
+  load_platform_info
+  [[ ${PACKAGE_MANAGER} == pacman ]] || return 0
+
+  local sudo_cmd
+  if ! sudo_cmd="$(sudo_prefix)"; then
+    warn "sudo is required to remove Arch AUR guard wrappers"
+    return 1
+  fi
+
+  local wrapper
+  for wrapper in makepkg $(arch_aur_guard_helpers); do
+    if [[ -e /usr/local/bin/${wrapper} ]] && grep -Fq 'lnx-df managed AUR guard' "/usr/local/bin/${wrapper}" 2>/dev/null; then
+      if [[ -n $sudo_cmd ]]; then
+        run_cmd "$sudo_cmd" rm -f "/usr/local/bin/${wrapper}"
+      else
+        run_cmd rm -f "/usr/local/bin/${wrapper}"
+      fi
+    else
+      log "skip AUR guard removal for ${wrapper}: not managed by lnx-df"
+    fi
+  done
 }
 
 install_zsh() {
@@ -1010,6 +1141,7 @@ check_dotfiles() {
   check_symlink_target "${HOME}/.config/kitty/themes" "${CONFIG_ROOT}/kitty/themes" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.config/tmux/tmux.conf" "${CONFIG_ROOT}/tmux/tmux.conf" || failures=$((failures + 1))
   check_symlink_target "${HOME}/.tmux.conf" "${HOME}/.config/tmux/tmux.conf" || failures=$((failures + 1))
+  check_arch_aur_guard || failures=$((failures + 1))
 
   (( failures == 0 ))
 }

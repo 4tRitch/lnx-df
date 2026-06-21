@@ -868,10 +868,6 @@ pacman_has_package() {
   pacman -Si "$1" >/dev/null 2>&1
 }
 
-paru_has_package() {
-  command_exists paru && paru -Si "$1" >/dev/null 2>&1
-}
-
 dnf_has_package() {
   dnf info "$1" >/dev/null 2>&1
 }
@@ -987,45 +983,32 @@ install_pacman_packages() {
   fi
 
   local pacman_filtered=()
-  local aur_filtered=()
   local pkg
   for pkg in "$@"; do
     if pacman_has_package "$pkg"; then
       pacman_filtered+=("$pkg")
-    elif (( EUID == 0 )); then
-      warn "package not available in pacman repos and AUR lookup is skipped as root: ${pkg}"
-    elif command_exists paru && paru_has_package "$pkg"; then
-      aur_filtered+=("$pkg")
-    elif command_exists paru; then
-      warn "package not available in pacman repos or AUR via paru: ${pkg}"
     else
-      warn "package not available in pacman repos and paru is not installed: ${pkg}"
+      warn "package not available in official pacman repos; AUR is intentionally disabled: ${pkg}"
     fi
   done
 
-  if (( ${#pacman_filtered[@]} == 0 )) && (( ${#aur_filtered[@]} == 0 )); then
-    warn "no pacman or AUR packages were available to install"
+  if (( ${#pacman_filtered[@]} == 0 )); then
+    warn "no official pacman packages were available to install"
     return 1
   fi
 
-  if (( ${#pacman_filtered[@]} > 0 )); then
-    local sudo_cmd
-    if ! sudo_cmd="$(sudo_prefix)"; then
-      warn "sudo is required for pacman installs"
-      return 1
-    fi
-
-    pacman_update_once || return 1
-
-    if [[ -n $sudo_cmd ]]; then
-      run_cmd "${sudo_cmd}" pacman -S --needed --noconfirm "${pacman_filtered[@]}"
-    else
-      run_cmd pacman -S --needed --noconfirm "${pacman_filtered[@]}"
-    fi
+  local sudo_cmd
+  if ! sudo_cmd="$(sudo_prefix)"; then
+    warn "sudo is required for pacman installs"
+    return 1
   fi
 
-  if (( ${#aur_filtered[@]} > 0 )); then
-    run_cmd paru -S --needed --noconfirm "${aur_filtered[@]}"
+  pacman_update_once || return 1
+
+  if [[ -n $sudo_cmd ]]; then
+    run_cmd "${sudo_cmd}" pacman -S --needed --noconfirm "${pacman_filtered[@]}"
+  else
+    run_cmd pacman -S --needed --noconfirm "${pacman_filtered[@]}"
   fi
 }
 

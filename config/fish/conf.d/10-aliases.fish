@@ -15,7 +15,7 @@ alias fc 'cp -rf'
 alias fm 'mv -rf'
 alias gl 'pwd'
 alias ls 'll'
-alias dd 'shutdown now'
+# alias dd 'shutdown now'
 
 function codex --description 'run Codex in unrestrict mode'
   command codex -s danger-full-access -a never $argv

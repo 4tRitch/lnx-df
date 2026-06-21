@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Android Studio
+GenericName=Android IDE
+Comment=Android app development IDE
+Exec=/home/ritch/.local/bin/android-studio %f
+Icon=/home/ritch/.local/opt/android-studio/bin/studio.svg
+Terminal=false
+Categories=Development;IDE;
+StartupNotify=true
+StartupWMClass=jetbrains-studio
+MimeType=text/plain;
