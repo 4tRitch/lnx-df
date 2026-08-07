@@ -15,7 +15,15 @@ alias fc 'cp -rf'
 alias fm 'mv -rf'
 alias gl 'pwd'
 alias ls 'll'
-# alias dd 'shutdown now'
+alias zed 'zeditor'
+alias zz 'zeditor'
+
+function dd --description 'guard against accidental raw disk writes'
+  set -l escaped_args (string escape -- $argv)
+  printf 'dd is blocked in fish to avoid accidental disk writes.\n' >&2
+  printf 'If you really need it, run: command dd %s\n' (string join ' ' $escaped_args) >&2
+  return 1
+end
 
 function codex --description 'run Codex in unrestrict mode'
   command codex -s danger-full-access -a never $argv

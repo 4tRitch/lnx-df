@@ -1,0 +1,84 @@
+[window]
+
+startup_mode = "Maximized"
+
+title = "Alacritty"
+
+dynamic_title = true
+
+# padding = { x = 1, y = 0 }
+
+decorations = "None"
+
+opacity = 1.0
+
+dynamic_padding = true
+
+
+
+[scrolling]
+
+history = 10000
+
+
+
+[font]
+
+normal = { family = "CaskaydiaCove Nerd Font Mono" }
+
+bold = { family = "CaskaydiaCove Nerd Font Mono" }
+
+italic = { family = "CaskaydiaCove Nerd Font Mono" }
+
+bold_italic = { family = "CaskaydiaCove Nerd Font Mono" }
+
+size = 20
+
+
+[colors]
+
+cursor = { text = "#BBBBBB", cursor = "CellForeground" }
+
+vi_mode_cursor = { text = "#ffffff", cursor = "CellForeground" }
+
+transparent_background_colors = true
+
+draw_bold_text_with_bright_colors = true
+
+[colors.primary]
+background = "#191919"
+foreground = "#BBBBBB"
+dim_foreground = "#BBBBBB"
+
+[colors.selection]
+background = "#BBBBBB"
+text = "#191919"
+
+[colors.normal]
+black = "#191919"
+red = "#E06C75"
+green = "#98C379"
+yellow = "#E5C07B"
+blue = "#61AFEF"
+magenta = "#C678DD"
+cyan = "#56B6C2"
+white = "#BBBBBB"
+
+[colors.bright]
+black = "#505050"
+red = "#E06C75"
+green = "#98C379"
+yellow = "#E5C07B"
+blue = "#61AFEF"
+magenta = "#C678DD"
+cyan = "#56B6C2"
+white = "#9E9E9E"
+
+[cursor]
+style = { shape = "Block", blinking = "Always" }
+vi_mode_style = { shape = "Block", blinking = "Always" }
+
+
+[selection]
+
+save_to_clipboard = true

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-wallpaper_dir="${WALLPAPER_DIR:-/home/ritch/Pictures/wallpapers}"
+wallpaper_dir="${WALLPAPER_DIR:-/home/ritch/pictures/wallpapers}"
 
 if command -v awww >/dev/null 2>&1 && command -v awww-daemon >/dev/null 2>&1; then
   wallpaper_client="awww"

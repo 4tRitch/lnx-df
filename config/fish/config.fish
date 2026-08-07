@@ -41,3 +41,6 @@ set --export PATH $BUN_INSTALL/bin $PATH
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 set -x PATH $PATH /home/ritch/.local/share/npm-global/lib/node_modules
 set -x PATH $PATH /home/ritch/.local/share/pnpm/bin
+
+# kimi-code
+fish_add_path -g "/home/ritch/.kimi-code/bin"
