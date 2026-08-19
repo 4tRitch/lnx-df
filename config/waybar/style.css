@@ -20,20 +20,21 @@ tooltip {
 #workspaces {
   margin: 4px 0;
   padding: 3px 6px;
+  color: #9a9a9a;
   background: rgba(24, 24, 32, 0.86);
   border: 1px solid rgba(230, 230, 230, 0.32);
   border-radius: 999px;
 }
 
 #workspaces button {
-  min-width: 18px;
-  margin: 0 1px;
-  padding: 0 8px;
-  color: #9a9a9a;
-  background: transparent;
-  border: 0;
-  border-radius: 999px;
+  margin: 0 2px;
+  padding: 0 7px;
   box-shadow: none;
+  border-radius: 999px;
+}
+
+#workspaces button.empty {
+  color: #6a6a6a;
 }
 
 #workspaces button.visible {
@@ -43,6 +44,7 @@ tooltip {
 #workspaces button.active {
   color: #111111;
   background: #dcdcdc;
+  border-radius: 999px;
 }
 
 #workspaces button.urgent {
@@ -50,9 +52,19 @@ tooltip {
   background: #f0f0f0;
 }
 
-#workspaces button:hover {
+#workspaces:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.14);
+}
+
+/* Barra del monitor HDMI (TV): compacta */
+window.HDMI-A-1 #workspaces {
+  margin: 3px 0;
+  padding: 2px 5px;
+}
+
+window.HDMI-A-1 #workspaces button {
+  padding: 0 4px;
 }
 
 #window,

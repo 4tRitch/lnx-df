@@ -14,7 +14,6 @@ alias fr 'rm -rf'
 alias fc 'cp -rf'
 alias fm 'mv -rf'
 alias gl 'pwd'
-alias ls 'll'
 alias zed 'zeditor'
 alias zz 'zeditor'
 

@@ -1,85 +1,150 @@
-{
-  "layer": "top",
-  "position": "top",
-  "height": 30,
-  "exclusive": true,
-  "spacing": 8,
+[
+  {
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "exclusive": true,
+    "spacing": 8,
+    "output": ["DP-2"],
 
-  "modules-left": ["hyprland/window"],
-  "modules-center": ["hyprland/workspaces"],
-  "modules-right": ["tray", "custom/keyboard", "clock", "custom/control-center", "custom/power"],
+    "modules-left": ["hyprland/window"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right": ["tray", "custom/keyboard", "clock", "custom/control-center", "custom/power"],
 
-  "hyprland/window": {
-    "format": "{class}",
-    "rewrite": {
-      "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
-      "^brave-chatgpt\\.com__-Default$": "ChatGPT",
-      "^lnx-df-webapp-chatgpt$": "ChatGPT",
-      "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
+    "hyprland/window": {
+      "format": "{class}",
+      "rewrite": {
+        "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
+        "^brave-chatgpt\\.com__-Default$": "ChatGPT",
+        "^lnx-df-webapp-chatgpt$": "ChatGPT",
+        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
+      },
+      "align": 0.5,
+      "justify": "center",
+      "max-length": 28,
+      "separate-outputs": true
     },
-    "align": 0.5,
-    "justify": "center",
-    "max-length": 28,
-    "separate-outputs": true
-  },
 
-  "hyprland/workspaces": {
-    "format": "{name}",
-    "sort-by-number": true,
-    "all-outputs": true,
-    "persistent-workspaces": {
-      "*": 5
+    "hyprland/workspaces": {
+      "sort-by": "id",
+      "all-outputs": false,
+      "format": "{name}",
+      "on-scroll-up": "~/.config/hypr/scripts/ws-cycle.sh prev",
+      "on-scroll-down": "~/.config/hypr/scripts/ws-cycle.sh next"
+    },
+
+    "tray": {
+      "icon-size": 18,
+      "spacing": 10
+    },
+
+    "custom/control-center": {
+      "tooltip": false,
+      "format": "[󰕮]",
+      "on-click": "~/.config/control-center/lnx-control-center"
+    },
+
+    "custom/notification": {
+      "tooltip": false,
+      "format": "{icon}",
+      "format-icons": {
+        "notification": "󰂚",
+        "none": "󰂜",
+        "dnd-notification": "󰂛",
+        "dnd-none": "󰂛"
+      },
+      "return-type": "json",
+      "exec-if": "which swaync-client",
+      "exec": "swaync-client -swb",
+      "on-click": "swaync-client -t -sw",
+      "on-click-right": "swaync-client -d -sw",
+      "escape": true
+    },
+
+    "custom/keyboard": {
+      "exec": "~/.config/waybar/scripts/keyboard-layout.sh --status",
+      "return-type": "json",
+      "interval": 2,
+      "on-click": "~/.config/waybar/scripts/keyboard-layout.sh --menu",
+      "on-click-right": "~/.config/waybar/scripts/keyboard-layout.sh --cycle",
+      "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
+      "tooltip": true
+    },
+
+    "clock": {
+      "format": "{:%a %d  %H:%M}",
+      "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/power": {
+      "exec": "~/.config/waybar/scripts/power-menu.sh --status",
+      "return-type": "json",
+      "interval": 3600,
+      "on-click": "~/.config/waybar/scripts/power-menu.sh --menu",
+      "tooltip": true
     }
   },
+  {
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "exclusive": true,
+    "spacing": 8,
+    "output": ["HDMI-A-1"],
 
-  "tray": {
-    "icon-size": 18,
-    "spacing": 10
-  },
+    "modules-left": ["hyprland/window"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right": ["custom/keyboard", "clock", "custom/control-center", "custom/power"],
 
-  "custom/control-center": {
-    "tooltip": false,
-    "format": "[󰕮]",
-    "on-click": "~/.config/control-center/lnx-control-center"
-  },
-
-  "custom/notification": {
-    "tooltip": false,
-    "format": "{icon}",
-    "format-icons": {
-      "notification": "󰂚",
-      "none": "󰂜",
-      "dnd-notification": "󰂛",
-      "dnd-none": "󰂛"
+    "hyprland/window": {
+      "format": "{class}",
+      "rewrite": {
+        "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
+        "^brave-chatgpt\\.com__-Default$": "ChatGPT",
+        "^lnx-df-webapp-chatgpt$": "ChatGPT",
+        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
+      },
+      "align": 0.5,
+      "justify": "center",
+      "max-length": 28,
+      "separate-outputs": true
     },
-    "return-type": "json",
-    "exec-if": "which swaync-client",
-    "exec": "swaync-client -swb",
-    "on-click": "swaync-client -t -sw",
-    "on-click-right": "swaync-client -d -sw",
-    "escape": true
-  },
 
-  "custom/keyboard": {
-    "exec": "~/.config/waybar/scripts/keyboard-layout.sh --status",
-    "return-type": "json",
-    "interval": 2,
-    "on-click": "~/.config/waybar/scripts/keyboard-layout.sh --menu",
-    "on-click-right": "~/.config/waybar/scripts/keyboard-layout.sh --cycle",
-    "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
-    "tooltip": true
-  },
+    "hyprland/workspaces": {
+      "sort-by": "id",
+      "all-outputs": false,
+      "format": "{name}",
+      "on-scroll-up": "~/.config/hypr/scripts/ws-cycle.sh prev",
+      "on-scroll-down": "~/.config/hypr/scripts/ws-cycle.sh next"
+    },
 
-  "clock": {
-    "format": "{:%a %d  %H:%M}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>"
-  },
+    "custom/control-center": {
+      "tooltip": false,
+      "format": "[󰕮]",
+      "on-click": "~/.config/control-center/lnx-control-center"
+    },
 
-  "custom/power": {
-    "exec": "~/.config/waybar/scripts/power-menu.sh --status",
-    "return-type": "json",
-    "interval": 3600,
-    "on-click": "~/.config/waybar/scripts/power-menu.sh --menu",
-    "tooltip": true
+    "custom/keyboard": {
+      "exec": "~/.config/waybar/scripts/keyboard-layout.sh --status",
+      "return-type": "json",
+      "interval": 2,
+      "on-click": "~/.config/waybar/scripts/keyboard-layout.sh --menu",
+      "on-click-right": "~/.config/waybar/scripts/keyboard-layout.sh --cycle",
+      "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
+      "tooltip": true
+    },
+
+    "clock": {
+      "format": "{:%a %d  %H:%M}",
+      "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    },
+
+    "custom/power": {
+      "exec": "~/.config/waybar/scripts/power-menu.sh --status",
+      "return-type": "json",
+      "interval": 3600,
+      "on-click": "~/.config/waybar/scripts/power-menu.sh --menu",
+      "tooltip": true
+    }
   }
-}
+]

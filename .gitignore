@@ -3,3 +3,4 @@
 ./config/nvim
 installer/.state/
 **/__pycache__/**
+**/.atl/
