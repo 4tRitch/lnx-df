@@ -1,0 +1,38 @@
+{
+  "autoUpdates": false,
+  "autoUpdatesProtectedForNative": true,
+  "changelogLastFetched": 1781473486700,
+  "firstStartTime": "2026-06-14T21:44:46.466Z",
+  "installMethod": "native",
+  "mcpServers": {
+    "codegraph": {
+      "args": [
+        "serve",
+        "--mcp"
+      ],
+      "command": "/home/ritch/.local/bin/codegraph",
+      "type": "stdio"
+    },
+    "context7": {
+      "args": [
+        "-y",
+        "--package=@upstash/context7-mcp@2.2.5",
+        "--",
+        "context7-mcp"
+      ],
+      "command": "npx"
+    },
+    "engram": {
+      "args": [
+        "mcp",
+        "--tools=agent"
+      ],
+      "command": "engram"
+    }
+  },
+  "migrationVersion": 13,
+  "opusProMigrationComplete": true,
+  "seenNotifications": {},
+  "sonnet1m45MigrationComplete": true,
+  "userID": "ac13ee1c0d8f9c5635989a99a714b7d2ff85e5f3d8b80347ab50d600daa3cffb"
+}
