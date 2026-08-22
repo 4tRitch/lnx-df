@@ -4,3 +4,6 @@
 installer/.state/
 **/__pycache__/**
 **/.atl/
+# hardware state - local only, do not track
+config/solaar/config.yaml
+config/waybar/audio-preferences.env
