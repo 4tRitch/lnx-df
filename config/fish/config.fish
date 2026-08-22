@@ -9,6 +9,10 @@ if status is-interactive
     zoxide init fish | source
   end
 
+  if command -q mise
+    mise activate fish | source
+  end
+
   if not set -q SSH_AUTH_SOCK
     eval (ssh-agent -c) >/dev/null
   end
@@ -19,6 +23,11 @@ if test -d $HOME/.opencode/bin
 end
 
 fish_add_path --path $HOME/.local/bin
+
+# mise shims - ensure pnpm/node etc available in non-interactive shells (fish -c)
+if test -d $HOME/.local/share/mise/shims
+  fish_add_path --path $HOME/.local/share/mise/shims
+end
 
 if test -f $HOME/.cargo/env.fish
   source $HOME/.cargo/env.fish
@@ -55,3 +64,29 @@ end
 if test -d /home/ritch/.kimi-code/bin
   fish_add_path --path /home/ritch/.kimi-code/bin
 end
+
+# deduplicate and clean inherited PATH pollution (from previous buggy `set -x PATH $PATH /path`)
+set -l _clean_path
+for _p in $PATH
+  # stale npm-global lib path (wrong, should be bin)
+  if test "$_p" = "/home/ritch/.local/share/npm-global/lib/node_modules"
+    continue
+  end
+  # bun bin should only be present if directory exists
+  if test "$_p" = "/home/ritch/.bun/bin"
+    if not test -d "$_p"
+      continue
+    end
+  end
+  # old PNPM_HOME without /bin is stale now that pnpm 11.22 expects bin
+  if test "$_p" = "/home/ritch/.local/share/pnpm"
+    # keep only if bin is not present elsewhere? simpler: skip plain, bin will be added via pnpm section
+    continue
+  end
+  if not contains -- "$_p" $_clean_path
+    set -a _clean_path "$_p"
+  end
+end
+set -g PATH $_clean_path
+set -e _clean_path
+set -e _p
