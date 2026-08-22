@@ -11,3 +11,6 @@ config/waybar/audio-preferences.env
 config/codex/tmp/
 config/codex/.tmp/
 config/codex/plugins/cache/
+# local fish backups - do not track
+config/fish/*.bak*
+*.bak.mise*
