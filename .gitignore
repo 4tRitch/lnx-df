@@ -1,9 +1,13 @@
 **/lazy-lock.json
 **/nvim/
 ./config/nvim
+config/nvim
 installer/.state/
 **/__pycache__/**
 **/.atl/
 # hardware state - local only, do not track
 config/solaar/config.yaml
 config/waybar/audio-preferences.env
+config/codex/tmp/
+config/codex/.tmp/
+config/codex/plugins/cache/

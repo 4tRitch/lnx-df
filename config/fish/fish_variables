@@ -1,11 +1,7 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
 SETUVAR --export JAVA_HOME:/home/ritch/\x2elocal/opt/android\x2dstudio/jbr
-SETUVAR --export MOZ_ENABLE_WAYLAND:1
 SETUVAR --export OPENPENCIL_DESKTOP_BIN:/home/ritch/\x2elocal/opt/openpencil/openpencil\x2ddesktop
 SETUVAR --export --path PATH:/home/ritch/\x2elocal/bin\x1e/home/ritch/\x2elocal/bin\x1e/home/ritch/\x2eopencode/bin\x1e/home/ritch/\x2ecargo/bin\x1e/usr/local/sbin\x1e/usr/local/bin\x1e/usr/bin\x1e/home/ritch/\x2elocal/share/flatpak/exports/bin\x1e/var/lib/flatpak/exports/bin\x1e/usr/bin/site_perl\x1e/usr/bin/vendor_perl\x1e/usr/bin/core_perl
-SETUVAR --export QT_QPA_PLATFORMTHEME:qt6ct
-SETUVAR --export QT_STYLE_OVERRIDE:breeze
-SETUVAR --export --path XDG_DATA_DIRS:/var/lib/flatpak/exports/share\x1e/home/ritch/\x2elocal/share/flatpak/exports/share\x1e/home/ritch/\x2elocal/share/flatpak/exports/share\x1e/var/lib/flatpak/exports/share\x1e/usr/local/share\x1e/usr/share
 SETUVAR __fish_initialized:4300
 SETUVAR fish_user_paths:/home/ritch/\x2elocal/bin\x1e/home/ritch/\x2eopencode/bin

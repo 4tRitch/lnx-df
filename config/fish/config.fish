@@ -1,9 +1,9 @@
 if status is-interactive
   # env STEAM_FORCE_DESKTOPUI_SCALING=1 steam
-  set -Ux MOZ_ENABLE_WAYLAND 1
-  set -Ux XDG_DATA_DIRS /var/lib/flatpak/exports/share $HOME/.local/share/flatpak/exports/share $XDG_DATA_DIRS
-set -Ux QT_QPA_PLATFORMTHEME qt6ct
-set -Ux QT_STYLE_OVERRIDE breeze
+  set -gx MOZ_ENABLE_WAYLAND 1
+  set -gx XDG_DATA_DIRS /var/lib/flatpak/exports/share $HOME/.local/share/flatpak/exports/share $XDG_DATA_DIRS
+  set -gx QT_QPA_PLATFORMTHEME qt6ct
+  set -gx QT_STYLE_OVERRIDE breeze
 
   if command -q zoxide
     zoxide init fish | source
@@ -28,20 +28,30 @@ if test -d $HOME/.dotnet
   fish_add_path --path $HOME/.dotnet $HOME/.dotnet/tools
 end
 
-# bun
-set --export BUN_INSTALL "$HOME/.bun"
-set --export PATH $BUN_INSTALL/bin $PATH
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-# npm global (codegraph, pi, etc.) - prefix is /home/ritch/.local/share/npm-global
-fish_add_path --path /home/ritch/.local/share/npm-global/bin
-
-# kimi-code
-fish_add_path -g "/home/ritch/.kimi-code/bin"
-
 # pnpm
 set -gx PNPM_HOME "/home/ritch/.local/share/pnpm"
 if not string match -q -- "$PNPM_HOME/bin" $PATH
   set -gx PATH "$PNPM_HOME/bin" $PATH
 end
 # pnpm end
+
+# bun
+set -gx BUN_INSTALL "$HOME/.bun"
+if test -d $BUN_INSTALL/bin
+  fish_add_path --path $BUN_INSTALL/bin
+end
+
+# homebrew - fish compatible
+if test -x /home/linuxbrew/.linuxbrew/bin/brew
+  eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+end
+
+# npm-global bin - only if exists (lib/node_modules is not a bin path)
+if test -d /home/ritch/.local/share/npm-global/bin
+  fish_add_path --path /home/ritch/.local/share/npm-global/bin
+end
+
+# kimi-code
+if test -d /home/ritch/.kimi-code/bin
+  fish_add_path --path /home/ritch/.kimi-code/bin
+end

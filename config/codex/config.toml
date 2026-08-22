@@ -1,157 +1,25 @@
-approvals_reviewer = "user"
-approval_policy = "on-request"
-default_permissions = "gentle-dev"
 model_instructions_file = "/home/ritch/.codex/engram-instructions.md"
 experimental_compact_prompt_file = "/home/ritch/.codex/engram-compact-prompt.md"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "low"
-[projects."/home/ritch"]
-trust_level = "trusted"
+[mcp_servers.codegraph]
+command = "codegraph"
+args = ["serve", "--mcp"]
 
-[projects."/home/ritch/dev/ai/tts/kokoro"]
-trust_level = "trusted"
+[marketplaces.engram]
+source_type = "git"
+source = "https://github.com/Gentleman-Programming/engram.git"
+ref = "main"
 
-[projects."/home/ritch/dotfiles"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev_content/games/tsukoku/history"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/client_app"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/models_ai"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/bknd"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/extension"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/front"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/mobile"]
-trust_level = "trusted"
-
-[projects."/home/ritch/dev/atomiracle/okaimono/landing"]
-trust_level = "trusted"
-
-[projects."/home/ritch/music"]
-trust_level = "trusted"
-
-[tui]
-status_line = ["model-with-reasoning", "current-dir", "git-branch", "branch-changes", "context-remaining", "five-hour-limit", "task-progress"]
-status_line_use_colors = true
-session_picker_view = "dense"
-
-[tui.model_availability_nux]
-"gpt-5.5" = 4
-"gpt-5.6-sol" = 4
-
-[notice]
-hide_full_access_warning = true
-
-[notice.model_migrations]
-"gpt-5.4" = "gpt-5.5"
+[plugins."engram@engram"]
+enabled = true
 
 [features]
-hooks = true
 multi_agent = true
-terminal_resize_reflow = true
-prevent_idle_sleep = true
-
-[mcp_servers.playwright]
-enabled = false
-command = "npx"
-args = ["@playwright/mcp@latest", "--headless", "--block-service-workers"]
-
-[mcp_servers.playwright.tools.browser_tabs]
-approval_mode = "approve"
 
 [agents]
 max_depth = 2
 max_threads = 4
-
-[hooks.state]
-
-[hooks.state."/home/ritch/.codex/hooks.json:permission_request:0:0"]
-enabled = true
-trusted_hash = "sha256:97209934892bef0d5bdac8fd5ebfd2c987b1f1f962e6adeee74772487a308466"
-
-[hooks.state."/home/ritch/.codex/hooks.json:post_tool_use:0:0"]
-trusted_hash = "sha256:05ac20fdc5ed527b43286ca21391be6ed76b33814d7978510002cdf8a195adb7"
-
-[hooks.state."/home/ritch/.codex/hooks.json:pre_compact:0:0"]
-trusted_hash = "sha256:7be233630ce39df4f497d7cf686ad53318e7763e5e9ecd23ce758767ff241974"
-
-[hooks.state."/home/ritch/.codex/hooks.json:pre_tool_use:0:0"]
-trusted_hash = "sha256:84895d667473c8ce4ad3a481595ab476f711d86c3fa7f6f32faa8fdbca162f9e"
-
-[hooks.state."/home/ritch/.codex/hooks.json:session_start:0:0"]
-trusted_hash = "sha256:328b432619135a27298c653f43208f48d92d9913853b3c452091b5ba25650e16"
-
-[hooks.state."/home/ritch/.codex/hooks.json:stop:0:0"]
-trusted_hash = "sha256:adecdffbaf98a00b9e69f4e9e98ccd24dd8464129a9eafeea29b880093001127"
-
-[hooks.state."/home/ritch/.codex/hooks.json:user_prompt_submit:0:0"]
-trusted_hash = "sha256:ae99c4430e3bdd0df1456f673bff4cb321493ae4eedbdabf8b43dee4efc5937f"
-
-[hooks.state."/home/ritch/.codex/hooks.json:session_start:1:0"]
-trusted_hash = "sha256:ee482040d324265de9bff0ee883aab2dad7b181a4a7e07c0250cfebe0dc32dd6"
-
-[hooks.state."/home/ritch/.codex/hooks.json:session_start:2:0"]
-trusted_hash = "sha256:989d93d1e8d5c7528194a5f9df1d6aea4fd3b317c92029cc04656c3fc349d0e5"
-enabled = false
-
-[permissions.gentle-dev]
-description = "Comfortable local development profile with workspace writes, network access, and read-only access to Git and Nix/Home Manager metadata."
-
-[permissions.gentle-dev.network]
-enabled = true
-
-[permissions.gentle-dev.network.domains]
-"*" = "allow"
-
-[permissions.gentle-dev.filesystem]
-glob_scan_max_depth = 6
-":slash_tmp" = "write"
-":tmpdir" = "write"
-"/nix/store" = "read"
-"~/.nix-profile" = "read"
-"~/.local/state/nix/profiles/home-manager/home-path" = "read"
-"~/.gitconfig" = "read"
-"~/.config/git" = "read"
-":minimal" = "read"
-
-[permissions.gentle-dev.filesystem.":workspace_roots"]
-"**/.config/gh/hosts.yml" = "deny"
-"**/.aws/credentials" = "deny"
-"**/credentials.json" = "deny"
-"**/.credentials/**" = "deny"
-"**/.ssh/**" = "deny"
-"**/secrets/**" = "deny"
-"**/*.key" = "deny"
-"**/*.pem" = "deny"
-"**/.env.*.local" = "deny"
-"**/.env.local" = "deny"
-"**/.env" = "deny"
-".git/**" = "write"
-"." = "write"
-
-[permissions.gentle-dev.workspace_roots]
-"~" = true
-
-[mcp_servers.codegraph]
-command = "/home/ritch/.local/bin/codegraph"
-args = ["serve", "--mcp"]
 
 [mcp_servers.engram]
 command = "engram"
