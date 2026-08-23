@@ -6,5 +6,5 @@ cur="$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .name' | he
 other="$(hyprctl monitors -j | jq -r --arg cur "$cur" '[.[] | select(.name != $cur) | .name] | .[0]')"
 
 if [ -n "$other" ] && [ "$other" != "null" ]; then
-  hyprctl dispatch focusmonitor "$other"
+  hyprctl dispatch "hl.dsp.focus({monitor=\"$other\"})"
 fi

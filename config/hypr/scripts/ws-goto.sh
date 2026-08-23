@@ -38,4 +38,8 @@ case "$monitor" in
 esac
 
 target=$((local_num + offset))
-hyprctl dispatch "$op" "$target"
+if [ "$op" = "workspace" ]; then
+  hyprctl dispatch "hl.dsp.focus({workspace=$target})"
+else
+  hyprctl dispatch "hl.dsp.window.move({workspace=$target})"
+fi

@@ -385,14 +385,14 @@ def paste_to_window(selector: str) -> bool:
         return False
 
     subprocess.run(
-        ["hyprctl", "dispatch", "focuswindow", selector],
+        ["hyprctl", "dispatch", f'hl.dsp.focus({{window="{selector}"}})'],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,
     )
     time.sleep(0.04)
     completed = subprocess.run(
-        ["hyprctl", "dispatch", "sendshortcut", f"CTRL,V,{selector}"],
+        ["hyprctl", "dispatch", f'hl.dsp.send_shortcut({{mods="CTRL", key="V", window="{selector}"}})'],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,

@@ -22,4 +22,4 @@ if [ "$dir" = "prev" ]; then
 else
   rel=$((cur + 1 > last ? first : cur + 1))
 fi
-hyprctl dispatch workspace "$rel"
+hyprctl dispatch "hl.dsp.focus({workspace=$rel})"

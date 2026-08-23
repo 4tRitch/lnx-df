@@ -291,9 +291,9 @@ class ControlCenter(Gtk.Application):
         return False
 
     def place_window(self):
-        run_detached(["hyprctl", "dispatch", "focuswindow", "class:dev.ritch.ControlCenter"])
-        run_detached(["hyprctl", "dispatch", "resizeactive", "exact", str(PANEL_WIDTH), str(PANEL_HEIGHT)])
-        run_detached(["hyprctl", "dispatch", "movewindowpixel", "exact", str(PANEL_FALLBACK_X), str(PANEL_TOP_MARGIN)])
+        run_detached(["hyprctl", "dispatch", 'hl.dsp.focus({window="class:dev.ritch.ControlCenter"})'])
+        run_detached(["hyprctl", "dispatch", f'hl.dsp.window.resize({{x={PANEL_WIDTH}, y={PANEL_HEIGHT}}})'])
+        run_detached(["hyprctl", "dispatch", f'hl.dsp.window.move({{x={PANEL_FALLBACK_X}, y={PANEL_TOP_MARGIN}}})'])
         return False
 
     def load_css(self):

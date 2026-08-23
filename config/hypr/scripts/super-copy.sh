@@ -10,9 +10,9 @@ except Exception:
 
 case "$active_class" in
   kitty|Alacritty|foot|org.wezfurlong.wezterm|com.mitchellh.ghostty)
-    exec hyprctl dispatch sendshortcut "CTRL SHIFT, C, activewindow"
+    exec hyprctl dispatch 'hl.dsp.send_shortcut({mods="CTRL SHIFT", key="C", window="activewindow"})'
     ;;
   *)
-    exec hyprctl dispatch sendshortcut "CTRL, C, activewindow"
+    exec hyprctl dispatch 'hl.dsp.send_shortcut({mods="CTRL", key="C", window="activewindow"})'
     ;;
 esac

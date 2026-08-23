@@ -66,9 +66,18 @@ def find_app_client(app: str, desktop_entry: str = "") -> dict[str, object] | No
 def flash_hypr_border(address: str) -> None:
     if not address:
         return
-    command_succeeds(["hyprctl", "keyword", "windowrulev2", f"bordercolor rgb(e8c66a) rgb(f5d782) 45deg,address:{address}"], timeout=0.8)
+    # Hyprland 0.55+ lua: `hyprctl keyword windowrulev2` is deprecated (keyword can't work with non-legacy parsers).
+    # Flash via new dispatcher if available, otherwise no-op — not critical for functionality.
+    # Try new window border flash via lua dispatcher; ignore failure.
+    try:
+        command_succeeds(["hyprctl", "dispatch", f'hl.dsp.window.set_prop({{prop="bordercolor", value="rgb(e8c66a) rgb(f5d782) 45deg", window="address:{address}"}})'], timeout=0.8)
+    except Exception:
+        pass
     time.sleep(0.45)
-    command_succeeds(["hyprctl", "reload", "config-only"], timeout=1.5)
+    try:
+        command_succeeds(["hyprctl", "reload", "config-only"], timeout=1.5)
+    except Exception:
+        pass
 
 
 def focus_app_window(app: str, desktop_entry: str = "") -> bool:
@@ -78,6 +87,6 @@ def focus_app_window(app: str, desktop_entry: str = "") -> bool:
     address = str(client.get("address") or "")
     if not address:
         return False
-    ok = command_succeeds(["hyprctl", "dispatch", "focuswindow", f"address:{address}"], timeout=1.0)
+    ok = command_succeeds(["hyprctl", "dispatch", f'hl.dsp.focus({{window="address:{address}"}})'], timeout=1.0)
     threading.Thread(target=flash_hypr_border, args=(address,), daemon=True).start()
     return ok

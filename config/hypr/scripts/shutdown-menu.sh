@@ -15,7 +15,7 @@ run_hyprshutdown() {
 case "$action" in
   logout)
     run_hyprshutdown 'Good night.'
-    exec hyprctl dispatch exit
+    exec hyprctl dispatch 'hl.dsp.exit()'
     ;;
   reboot)
     run_hyprshutdown 'Restarting.' --post-cmd 'systemctl reboot'

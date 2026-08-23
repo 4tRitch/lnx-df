@@ -22,6 +22,6 @@ esac
 
 target="$(hyprctl monitors -j | jq -r "$expr")"
 if [ -n "$target" ] && [ "$target" != "null" ]; then
-  hyprctl dispatch movewindow "mon:$target"
-  hyprctl dispatch focusmonitor "$target"
+  hyprctl dispatch "hl.dsp.window.move({monitor=\"$target\"})"
+  hyprctl dispatch "hl.dsp.focus({monitor=\"$target\"})"
 fi
