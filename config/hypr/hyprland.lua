@@ -661,6 +661,8 @@ hl.bind("SUPER" .. " + " .. "C", hl.dsp.exec_cmd("~/.config/hypr/scripts/super-c
 
 hl.bind("SUPER" .. " + " .. "V", hl.dsp.exec_cmd("~/.config/hypr/scripts/super-paste.sh"))
 
+hl.bind("SUPER + ALT" .. " + " .. "V", hl.dsp.exec_cmd("~/.config/hypr/scripts/imgpush-abigail.sh"))
+
 -- clipboard history: cliphist + custom GTK picker
 
 
