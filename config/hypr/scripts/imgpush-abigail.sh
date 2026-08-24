@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # imgpush binding helper — run from Hyprland SUPER+ALT+V
-# Copies local clipboard image to abigail:/tmp and shows the path in a Kitty popup.
-# No notification, no clipboard clobber.
+# Copies local clipboard image to abigail:/tmp and copies the path to clipboard
+# so you can paste directly in opencode (Abigail). No popup, no notification.
 set -euo pipefail
 
 if ! command -v fish >/dev/null 2>&1; then
@@ -19,9 +19,7 @@ if [ $status -ne 0 ]; then
   exit 0
 fi
 
-# Show success in a small kitty window with the path (copy manually if needed)
-# The window stays open until Enter
-kitty --title "imgpush → abigail" sh -c "printf 'Pushed to abigail:\n%s\n\nPegá ese path en opencode (Abigail).\n\nPress Enter to close...' \"$result\"; read -r" &
+# Copy path to clipboard so you can paste directly in opencode (Abigail)
+printf '%s' "$result" | wl-copy
 
-# Also print to stdout for hyprland exec log
-printf '%s\n' "$result"
+# No popup needed — path is now in clipboard, just paste in opencode
