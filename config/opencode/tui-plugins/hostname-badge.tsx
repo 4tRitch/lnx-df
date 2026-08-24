@@ -28,7 +28,7 @@ const CompactBadge = () => (
     <text fg={accent} bold>
       ● {label}
     </text>
-    {isSSH ? <text fg="#7A7A7A">ssh</text> : null}
+    {isSSH ? <text fg="#7A7A7A">ssh</text> : <text fg="#7A7A7A">local</text>}
   </box>
 )
 
