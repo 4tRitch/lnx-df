@@ -16,6 +16,16 @@ if status is-interactive
   if not set -q SSH_AUTH_SOCK
     eval (ssh-agent -c) >/dev/null
   end
+
+  # Always use Kitty's ssh kitten when inside Kitty — it forwards
+  # terminfo (xterm-kitty) + clipboard (OSC 52) + Kitty graphics
+  # so image paste into opencode works over SSH. Plain `ssh` drops
+  # WAYLAND_DISPLAY and blocks image/png mime.
+  if test "$TERM" = "xterm-kitty"
+    if command -q kitty
+      alias ssh="kitty +kitten ssh"
+    end
+  end
 end
 
 if test -d $HOME/.opencode/bin
