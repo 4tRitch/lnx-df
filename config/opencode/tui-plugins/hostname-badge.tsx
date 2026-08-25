@@ -23,46 +23,73 @@ function colorForHost(name: string): string {
 const accent = colorForHost(hostname)
 const label = `@${hostname}`
 
-const CompactBadge = () => (
-  <box flexDirection="row" gap={1}>
-    <text fg={accent} bold>
-      ● {label}
-    </text>
-    {isSSH ? <text fg="#7A7A7A">ssh</text> : <text fg="#7A7A7A">local</text>}
-  </box>
-)
-
-const FooterBadge = () => (
-  <box flexDirection="row" justifyContent="center" paddingTop={1} gap={1}>
-    <text fg={accent} bold>
-      ● {label}
-    </text>
-    {isSSH ? <text fg="#9E9E9E">· ssh</text> : <text fg="#5A5A5A">· local</text>}
-    <text fg="#5A5A5A">· {isSSH ? "estás en remoto" : "sesión local"}</text>
-  </box>
-)
+function formatPath(raw: string): string {
+  if (!raw) return ""
+  const home = os.homedir()
+  if (raw === home) return "~"
+  if (raw.startsWith(home + "/")) return "~" + raw.slice(home.length)
+  return raw
+}
 
 const tui: TuiPlugin = async (api) => {
+  const getGlobalDir = () => formatPath(api.state.path.directory || api.state.path.worktree || "")
+  const getSessionDir = (sessionId: string) => {
+    const s = api.state.session.get(sessionId)
+    const raw = s?.directory || api.state.path.directory || api.state.path.worktree || ""
+    return formatPath(raw)
+  }
+
   api.slots.register({
     id,
     order: 5,
     slots: {
       // Home screen footer — always visible when no session
       home_footer() {
-        return <FooterBadge />
+        return (
+          <box flexDirection="column" alignItems="center" paddingTop={1} gap={0}>
+            <box flexDirection="row" justifyContent="center" gap={1}>
+              <text fg={accent} bold>
+                ● {label}
+              </text>
+              {isSSH ? <text fg="#9E9E9E">· ssh</text> : <text fg="#5A5A5A">· local</text>}
+              <text fg="#5A5A5A">· {isSSH ? "estás en remoto" : "sesión local"}</text>
+            </box>
+            <text fg="#6B7280">{getGlobalDir()}</text>
+          </box>
+        )
       },
-      // Right side of the input prompt — visible on home and in sessions
+      // Right side of the input prompt — no path (removed per user request - red box)
       home_prompt_right() {
-        return <CompactBadge />
+        return (
+          <box flexDirection="row" gap={1}>
+            <text fg={accent} bold>
+              ● {label}
+            </text>
+            {isSSH ? <text fg="#7A7A7A">ssh</text> : <text fg="#7A7A7A">local</text>}
+          </box>
+        )
       },
       session_prompt_right() {
-        return <CompactBadge />
-      },
-      // Sidebar footer — visible inside a session
-      sidebar_footer() {
         return (
-          <box paddingLeft={1} paddingRight={1} paddingBottom={1}>
-            <CompactBadge />
+          <box flexDirection="row" gap={1}>
+            <text fg={accent} bold>
+              ● {label}
+            </text>
+            {isSSH ? <text fg="#7A7A7A">ssh</text> : <text fg="#7A7A7A">local</text>}
+          </box>
+        )
+      },
+      // Sidebar footer — visible inside a session (your red box in screenshot)
+      sidebar_footer(props: { session_id: string }) {
+        return (
+          <box flexDirection="column" paddingLeft={1} paddingRight={1} paddingBottom={1} gap={0}>
+            <box flexDirection="row" gap={1}>
+              <text fg={accent} bold>
+                ● {label}
+              </text>
+              {isSSH ? <text fg="#7A7A7A">ssh</text> : <text fg="#7A7A7A">local</text>}
+            </box>
+            <text fg="#6B7280">{getSessionDir(props.session_id)}</text>
           </box>
         )
       },
