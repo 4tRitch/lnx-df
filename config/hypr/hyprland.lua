@@ -533,7 +533,7 @@ hl.bind("SUPER" .. " + " .. "F", hl.dsp.window.fullscreen())
 
 -- fullscreen total
 
-hl.bind("SUPER + SHIFT" .. " + " .. "F", hl.dsp.window.fullscreen())
+hl.bind("SUPER + SHIFT" .. " + " .. "F", hl.dsp.window.fullscreen({ mode = "maximized" }))
 
 -- maximized respetando barras
 
