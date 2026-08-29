@@ -21,9 +21,30 @@ if status is-interactive
   # terminfo (xterm-kitty) + clipboard (OSC 52) + Kitty graphics
   # so image paste into opencode works over SSH. Plain `ssh` drops
   # WAYLAND_DISPLAY and blocks image/png mime.
+  #
+  # Exception: `enlace` is a Windows 11 host whose login shell is
+  # PowerShell, and the kitten's internal `exec` handshake is not
+  # valid there (`exec: The term 'exec' is not recognized as a
+  # name of a cmdlet...`). For that host only we fall back to plain
+  # `command ssh`, which authenticates over key and lands in
+  # PowerShell cleanly. Every other host keeps the kitten path.
   if test "$TERM" = "xterm-kitty"
     if command -q kitty
-      alias ssh="kitty +kitten ssh"
+      function ssh --description "kitty +kitten ssh, except for enlace (Windows PowerShell)"
+        set -l is_enlace false
+        for arg in $argv
+          if string match -q -r 'enlace' -- $arg
+            set is_enlace true
+            break
+          end
+        end
+
+        if test "$is_enlace" = "true"
+          command ssh $argv
+        else
+          kitty +kitten ssh $argv
+        end
+      end
     end
   end
 end
