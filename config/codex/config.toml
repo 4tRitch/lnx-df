@@ -74,8 +74,8 @@ trusted_hash = "sha256:796833078d2d77fad3c2592459147f29c2322407e261374a875c656b2
 trusted_hash = "sha256:604b744e53ba320fd3ec2510dbcff7cbc2460424e65f0b06c3aa79e4892e302b"
 
 [marketplaces.engram]
-last_updated = "2026-08-24T03:37:44Z"
-last_revision = "47f281cb9dcf20f2c93cd3d9849d10191722d4d3"
+last_updated = "2026-08-27T02:07:36Z"
+last_revision = "59cb8f2dfe9af900a201fdc979d46af0cfa08d96"
 source_type = "git"
 source = "https://github.com/Gentleman-Programming/engram.git"
 ref = "main"
