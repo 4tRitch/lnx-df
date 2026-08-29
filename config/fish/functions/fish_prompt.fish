@@ -70,8 +70,7 @@ function __powerline_git_segment --argument-names now_ms
     end
   end
 
-  set -l status_segment ' '
-  set status_segment "$status_segment"(set_color $__POWERLINE_GIT_FG)'['$branch
+  set -l status_segment (set_color $__POWERLINE_BRANCH_FG)"branch: ["$branch
 
   if test -n "$symbols"
     set status_segment "$status_segment $symbols"
@@ -101,16 +100,31 @@ function fish_prompt
     set -g __POWERLINE_LAST_PWD $PWD
   end
 
-  __powerline_set_default_color $__POWERLINE_DIR_FG
-  printf '%s' $__POWERLINE_CWD
-  set_color normal
+  set -l printed 0
 
   if test -n "$SSH_CONNECTION$SSH_CLIENT$SSH_TTY"
-    printf ' '
     set_color $__POWERLINE_META_FG
     printf '@%s' $__POWERLINE_HOSTNAME
     set_color normal
+    set printed 1
   end
+
+  set -l branch_segment (__powerline_git_segment $now_ms)
+  if test -n "$branch_segment"
+    if test $printed -eq 1
+      printf ' '
+    end
+    printf '%s' $branch_segment
+    set printed 1
+  end
+
+  if test $printed -eq 1
+    printf ' '
+  end
+  __powerline_set_default_color $__POWERLINE_DIR_FG
+  printf '%s' $__POWERLINE_CWD
+  set_color normal
+  set printed 1
 
   printf ' '
   __powerline_set_default_color $__POWERLINE_TIME_FG
@@ -130,8 +144,6 @@ function fish_prompt
     printf '[x %d]' $last_status
     set_color normal
   end
-
-  __powerline_git_segment $now_ms
 
   set -l user_symbol '$'
   if test $__POWERLINE_IS_ROOT -eq 1

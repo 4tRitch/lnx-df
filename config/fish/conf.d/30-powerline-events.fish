@@ -4,6 +4,8 @@ function __powerline_should_refresh_git --argument-names cmd
   string match -qr '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)(fetch|pull|push)([[:space:]]|$)' -- $cmd; and return 0
   string match -qr '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)remote([[:space:]]+)update([[:space:]]|$)' -- $cmd; and return 0
   string match -qr '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)(checkout|switch|commit|merge|rebase|reset|stash|cherry-pick|revert)([[:space:]]|$)' -- $cmd; and return 0
+  string match -qr '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)branch([[:space:]]|$)' -- $cmd; and return 0
+  string match -qr '(^|[;&|][[:space:]]*)(git|g)([[:space:]]+)(worktree|symbolic-ref)([[:space:]]|$)' -- $cmd; and return 0
   return 1
 end
 
