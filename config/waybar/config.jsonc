@@ -5,26 +5,37 @@
     "height": 30,
     "exclusive": true,
     "spacing": 8,
-    "output": ["DP-2"],
-
-    "modules-left": ["hyprland/window"],
-    "modules-center": ["hyprland/workspaces"],
-    "modules-right": ["tray", "custom/keyboard", "clock", "custom/control-center", "custom/power"],
-
+    "output": [
+      "DP-2"
+    ],
+    "modules-left": [
+      "hyprland/window"
+    ],
+    "modules-center": [
+      "hyprland/workspaces"
+    ],
+    "modules-right": [
+      "tray",
+      "custom/keyboard",
+      "clock",
+      "custom/control-center",
+      "custom/power"
+    ],
     "hyprland/window": {
       "format": "{class}",
       "rewrite": {
         "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
         "^brave-chatgpt\\.com__-Default$": "ChatGPT",
         "^lnx-df-webapp-chatgpt$": "ChatGPT",
-        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
+        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp",
+        "^brave-web\\.whatsapp\\.com__-Default$": "WhatsApp",
+        "^lnx-df-webapp-whatsapp$": "WhatsApp"
       },
       "align": 0.5,
       "justify": "center",
       "max-length": 28,
       "separate-outputs": true
     },
-
     "hyprland/workspaces": {
       "sort-by": "id",
       "all-outputs": false,
@@ -32,18 +43,15 @@
       "on-scroll-up": "~/.config/hypr/scripts/ws-cycle.sh prev",
       "on-scroll-down": "~/.config/hypr/scripts/ws-cycle.sh next"
     },
-
     "tray": {
       "icon-size": 18,
       "spacing": 10
     },
-
     "custom/control-center": {
       "tooltip": false,
       "format": "[󰕮]",
       "on-click": "~/.config/control-center/lnx-control-center"
     },
-
     "custom/notification": {
       "tooltip": false,
       "format": "{icon}",
@@ -60,7 +68,6 @@
       "on-click-right": "swaync-client -d -sw",
       "escape": true
     },
-
     "custom/keyboard": {
       "exec": "~/.config/waybar/scripts/keyboard-layout.sh --status",
       "return-type": "json",
@@ -70,12 +77,10 @@
       "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
       "tooltip": true
     },
-
     "clock": {
       "format": "{:%a %d  %H:%M}",
       "tooltip-format": "<tt><small>{calendar}</small></tt>"
     },
-
     "custom/power": {
       "exec": "~/.config/waybar/scripts/power-menu.sh --status",
       "return-type": "json",
@@ -90,26 +95,36 @@
     "height": 30,
     "exclusive": true,
     "spacing": 8,
-    "output": ["HDMI-A-1"],
-
-    "modules-left": ["hyprland/window"],
-    "modules-center": ["hyprland/workspaces"],
-    "modules-right": ["custom/keyboard", "clock", "custom/control-center", "custom/power"],
-
+    "output": [
+      "HDMI-A-1"
+    ],
+    "modules-left": [
+      "hyprland/window"
+    ],
+    "modules-center": [
+      "hyprland/workspaces"
+    ],
+    "modules-right": [
+      "custom/keyboard",
+      "clock",
+      "custom/control-center",
+      "custom/power"
+    ],
     "hyprland/window": {
       "format": "{class}",
       "rewrite": {
         "^brave-aalgkepfhigihlhelhgejbkkmmbgbpmb-Profile_3$": "Webex",
         "^brave-chatgpt\\.com__-Default$": "ChatGPT",
         "^lnx-df-webapp-chatgpt$": "ChatGPT",
-        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp"
+        "^brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default$": "WhatsApp",
+        "^brave-web\\.whatsapp\\.com__-Default$": "WhatsApp",
+        "^lnx-df-webapp-whatsapp$": "WhatsApp"
       },
       "align": 0.5,
       "justify": "center",
       "max-length": 28,
       "separate-outputs": true
     },
-
     "hyprland/workspaces": {
       "sort-by": "id",
       "all-outputs": false,
@@ -117,13 +132,11 @@
       "on-scroll-up": "~/.config/hypr/scripts/ws-cycle.sh prev",
       "on-scroll-down": "~/.config/hypr/scripts/ws-cycle.sh next"
     },
-
     "custom/control-center": {
       "tooltip": false,
       "format": "[󰕮]",
       "on-click": "~/.config/control-center/lnx-control-center"
     },
-
     "custom/keyboard": {
       "exec": "~/.config/waybar/scripts/keyboard-layout.sh --status",
       "return-type": "json",
@@ -133,12 +146,10 @@
       "on-click-middle": "~/.config/waybar/scripts/keyboard-layout.sh --ime-toggle",
       "tooltip": true
     },
-
     "clock": {
       "format": "{:%a %d  %H:%M}",
       "tooltip-format": "<tt><small>{calendar}</small></tt>"
     },
-
     "custom/power": {
       "exec": "~/.config/waybar/scripts/power-menu.sh --status",
       "return-type": "json",

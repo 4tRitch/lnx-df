@@ -73,7 +73,7 @@ launch() {
 
   case "$browser" in
     brave|chromium|google-chrome-stable|google-chrome|microsoft-edge-stable|vivaldi-stable)
-      exec "$browser" --new-window --class "$CLASS" "--app=$URL"
+      exec "$browser" --new-window --class="$CLASS" "--app=$URL"
       ;;
     firefox)
       exec "$browser" --new-window "$URL"
